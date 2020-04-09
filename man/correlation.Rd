@@ -9,7 +9,7 @@ correlation(
   data2 = NULL,
   method = "pearson",
   p_adjust = "holm",
-  ci = "default",
+  ci = 0.95,
   bayesian = FALSE,
   bayesian_prior = "medium",
   bayesian_ci_method = "hdi",
@@ -32,9 +32,9 @@ correlation(
 
 \item{p_adjust}{Correction method for frequentist correlations. Can be one of "holm" (default), "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr" or "none".}
 
-\item{ci}{Confidence/Credible Interval level. If "default", then 0.95 for Frequentist and 0.89 for Bayesian (see documentation in the \pkg{bayestestR} package).}
+\item{ci}{Confidence/Credible Interval level. If "default", then it is set to 0.95 (95\% CI).}
 
-\item{bayesian}{If TRUE, will run the correlations under a Bayesian framework Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).}
+\item{bayesian}{If TRUE, will run the correlations under a Bayesian framework. Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).}
 
 \item{bayesian_prior}{For the prior argument, several named values are recognized: "medium.narrow", "medium", "wide", and "ultrawide". These correspond to scale values of 1/sqrt(27), 1/3, 1/sqrt(3) and 1, respectively. See the \code{BayesFactor::correlationBF} function.}
 
@@ -46,9 +46,9 @@ correlation(
 
 \item{include_factors}{If \code{TRUE}, the factors are kept and eventually converted to numeric or used as random effects (depending of \code{multilevel}). If \code{FALSE}, factors are removed upfront.}
 
-\item{partial}{Can be TRUE or "semi" for partial and semi-partial correlations, respectively. This only works for Frequentist correlations.}
+\item{partial}{Can be TRUE or "semi" for partial and semi-partial correlations, respectively.}
 
-\item{partial_bayesian}{If TRUE, will run the correlations under a Bayesian framework Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).}
+\item{partial_bayesian}{If TRUE, will run the correlations under a Bayesian framework. Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).}
 
 \item{multilevel}{If \code{TRUE}, the factors are included as random factors. Else, if \code{FALSE} (default), they are included as fixed effects in the simple regression model.}
 
@@ -76,23 +76,34 @@ Performs a correlation analysis.
 \item \strong{Distance correlation}: Distance correlation measures both linear and nonlinear association between two random variables or random vectors. This is in contrast to Pearson's correlation, which can only detect linear association between two random variables.
 \item \strong{Percentage bend correlation}: Introduced by Wilcox (1994), it is based on a down-weight of a specified percentage of marginal observations deviating from the median (by default, 20\%).
 \item \strong{Shepherd's Pi correlation}: Equivalent to a Spearman's rank correlation after outliers removal (by means of bootstrapped mahalanobis distance).
-\item \strong{Point-Biserial correlation}: Correlation coefficient used when one variable is dichotomous.
+\item \strong{Point-Biserial and biserial correlation}: Correlation coefficient used when one variable is continuous and the other is dichotomous (binary). Point-serial is equivalent to a Pearson's correlation, while Biserial should be used when the binary variable is assumed to have an underlying continuity. For example, anxiety level can be measured on a continuous scale, but can be classified dichotomously as high/low.
 \item \strong{Polychoric correlation}: Correlation between two theorised normally distributed continuous latent variables, from two observed ordinal variables.
 \item \strong{Tetrachoric correlation}: Special case of the polychoric correlation applicable when both observed variables are dichotomous.
+
+\item \strong{Partial correlation}: Correlation between two variables after adjusting for the (linear) the effect of one or more variable. The correlation test is here run after having partialized the dataset, independently from it. In other words, it considers partialization as an independent step generating a different dataset, rather than belonging to the same model. This is why small discrepancies are to be expected for the t- and the p-values (but not the correlation coefficient) compared to other implementations such as \code{ppcor}.
+
+\item \strong{Multilevel correlation}: Multilevel correlations are a special case of partial correlations where the variable to be adjusted for is a factor and is included as a random effect in a mixed model.
+
 }
 }
 }
 \examples{
-library(dplyr)
+library(correlation)
+
 cor <- correlation(iris)
 
 cor
 summary(cor)
 as.table(cor)
 
-iris \%>\%
-  group_by(Species) \%>\%
-  correlation()
+# Grouped dataframe
+if (require("dplyr")) {
+  library(dplyr)
 
-correlation(mtcars[-2], method = "auto")
+  iris \%>\%
+    group_by(Species) \%>\%
+    correlation()
+
+  correlation(mtcars[-2], method = "auto")
+}
 }

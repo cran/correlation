@@ -1,5 +1,5 @@
 #' @export
-summary.easycorrelation <- function(object, redundant = FALSE, ...) {
+summary.easycorrelation <- function(object, redundant = FALSE, stars = TRUE, ...) {
 
   # If data2 is present
   if (!is.null(attributes(object)$data2)) {
@@ -28,7 +28,8 @@ summary.easycorrelation <- function(object, redundant = FALSE, ...) {
 
   # Transfer attributes
   attributes(out) <- c(attributes(out), attributes(object)[!names(attributes(object)) %in% c("names", "row.names", "class", names(attributes(out)))])
-  class(out) <- c("easycormatrix", class(out))
+  attr(out, "stars") <- stars
+  class(out) <- c("easycormatrix", "see_easycormatrix", class(out))
   out
 }
 
@@ -50,6 +51,24 @@ as.matrix.easycorrelation <- function(x, ...) {
   mat <- mat[-1]
   as.matrix(mat)
 }
+
+
+
+
+
+
+# plot ----------------------------
+
+#' @export
+plot.easycormatrix <- function(x, ...) {
+  if (!requireNamespace("see", quietly = TRUE)) {
+    stop("Package 'see' needed to plot correlation graphs. Please install it by running `install.packages('see')`.")
+  }
+  NextMethod()
+}
+
+
+
 
 
 
