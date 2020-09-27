@@ -76,3 +76,42 @@ test_that("cor_test shepherd", {
   out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "shepherd")
   testthat::expect_equal(out$r, as.numeric(0.94762), tol = 0.01)
 })
+
+
+test_that("cor_test blomqvist", {
+  set.seed(333)
+  out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "blomqvist")
+  testthat::expect_equal(out$r, as.numeric(0.9066667), tol = 0.01)
+})
+
+test_that("cor_test hoeffding", {
+  set.seed(333)
+  out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "hoeffding")
+  testthat::expect_equal(out$r, as.numeric(0.5629277), tol = 0.01)
+})
+
+test_that("cor_test gamma", {
+  set.seed(333)
+  out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "gamma")
+  testthat::expect_equal(out$r, as.numeric(0.8453925), tol = 0.01)
+})
+
+test_that("cor_test gaussian", {
+  set.seed(333)
+  out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "gaussian")
+  testthat::expect_equal(out$r, as.numeric(0.87137), tol = 0.01)
+
+  out <- cor_test(iris, "Petal.Length", "Petal.Width", method = "gaussian", bayesian = TRUE)
+  testthat::expect_equal(out$r, as.numeric(0.8620878), tol = 0.01)
+})
+
+
+
+# Edge cases --------------------------------------------------------------
+test_that("cor_test 2 valid observations", {
+  out <- correlation(data.frame(v2 = c(2, 1, 1, 2), v3 = c(1,2, NA, NA)))
+  testthat::expect_true(is.na(out$r))
+})
+
+
+

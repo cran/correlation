@@ -5,7 +5,7 @@
 #' @param data A data frame.
 #' @param x,y Names of two variables present in the data.
 #' @param ci Confidence/Credible Interval level. If "default", then it is set to 0.95 (95\% CI).
-#' @param method A character string indicating which correlation coefficient is to be used for the test. One of "pearson" (default), "kendall", or "spearman", "biserial", "polychoric", "tetrachoric", "biweight", "distance", "percentage" (for percentage bend correlation) or "shepherd" (for Shepherd's Pi correlation). Setting "auto" will attempt at selecting the most relevant method (polychoric when ordinal factors involved, tetrachoric when dichotomous factors involved, point-biserial if one dichotomous and one continuous and pearson otherwise).
+#' @param method A character string indicating which correlation coefficient is to be used for the test. One of "pearson" (default), "kendall", or "spearman", "biserial", "polychoric", "tetrachoric", "biweight", "distance", "percentage" (for percentage bend correlation), "blomqvist" (for Blomqvist's coefficient), "hoeffding" (for Hoeffding's D), "gamma", "gaussian" (for Gaussian Rank correlation) or "shepherd" (for Shepherd's Pi correlation). Setting "auto" will attempt at selecting the most relevant method (polychoric when ordinal factors involved, tetrachoric when dichotomous factors involved, point-biserial if one dichotomous and one continuous and pearson otherwise).
 #' @param bayesian,partial_bayesian If TRUE, will run the correlations under a Bayesian framework. Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).
 #' @param include_factors If \code{TRUE}, the factors are kept and eventually converted to numeric or used as random effects (depending of \code{multilevel}). If \code{FALSE}, factors are removed upfront.
 #' @param partial Can be TRUE or "semi" for partial and semi-partial correlations, respectively.
@@ -29,6 +29,10 @@
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "biweight")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "distance")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "percentage")
+#' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "blomqvist")
+#' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "hoeffding")
+#' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "gamma")
+#' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "gaussian")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "shepherd")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", bayesian = TRUE)
 #'
@@ -66,6 +70,7 @@
 cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE, bayesian_prior = "medium", bayesian_ci_method = "hdi", bayesian_test = c("pd", "rope", "bf"), include_factors = FALSE, partial = FALSE, partial_bayesian = FALSE, multilevel = FALSE, robust = FALSE, ...) {
 
   # Sanity checks
+  if (!x %in% names(data) | !y %in% names(data)) stop("The names you entered for x and y are not available in the dataset. Make sure there are no typos!")
   if (ci == "default") ci <- 0.95
   if (partial == FALSE & (partial_bayesian | multilevel)) partial <- TRUE
 
@@ -82,7 +87,19 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
 
   # Robust
   if (robust) {
-    data[c(x, y)] <- effectsize::ranktransform(data[c(x, y)], sign = TRUE, method = "average")
+    data[c(x, y)] <- effectsize::ranktransform(data[c(x, y)], sign = FALSE, method = "average")
+  }
+
+  n_obs <- length(.complete_variable_x(data, x, y))
+  # This is a trick in case the number of valid observations is lower than 3
+  invalid <- FALSE
+  if(n_obs < 3){
+    warning(paste(x, "and", y, "have less than 3 complete observations. Returning NA."))
+    invalid <- TRUE
+    original_info <- list(data=data, x=x, y=y)
+    data <- datasets::mtcars # Basically use a working dataset so the correlation doesn't fail
+    x <- "mpg"
+    y <- "disp"
   }
 
 
@@ -105,6 +122,14 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
       out <- .cor_test_distance(data, x, y, ci = ci, ...)
     } else if (method %in% c("percentage", "percentage_bend", "percentagebend", "pb")) {
       out <- .cor_test_percentage(data, x, y, ci = ci, ...)
+    } else if (method %in% c("blomqvist", "median", "medial")) {
+      out <- .cor_test_blomqvist(data, x, y, ci = ci, ...)
+    } else if (method %in% c("hoeffding")) {
+      out <- .cor_test_hoeffding(data, x, y, ci = ci, ...)
+    } else if (method %in% c("gamma")) {
+      out <- .cor_test_gamma(data, x, y, ci = ci, ...)
+    } else if (method %in% c("gaussian")) {
+      out <- .cor_test_gaussian(data, x, y, ci = ci, ...)
     } else if (method %in% c("shepherd", "sheperd", "shepherdspi", "pi")) {
       out <- .cor_test_shepherd(data, x, y, ci = ci, bayesian = FALSE, ...)
     } else {
@@ -114,26 +139,40 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
     # Bayesian
   } else {
     if (method %in% c("tetra", "tetrachoric")) {
-      stop("Tetrachoric Bayesian correlations are not supported yet.")
+      stop("Tetrachoric Bayesian correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("poly", "polychoric")) {
-      stop("Polychoric Bayesian correlations are not supported yet.")
+      stop("Polychoric Bayesian correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("biserial", "pointbiserial", "point-biserial")) {
-      stop("Biserial Bayesian correlations are not supported yet.")
+      stop("Biserial Bayesian correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("biweight")) {
-      stop("Biweight Bayesian correlations are not supported yet.")
+      stop("Biweight Bayesian correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("distance")) {
-      stop("Bayesian distance correlations are not supported yet.")
+      stop("Bayesian distance correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("percentage", "percentage_bend", "percentagebend", "pb")) {
-      stop("Bayesian Percentage Bend correlations are not supported yet.")
+      stop("Bayesian Percentage Bend correlations are not supported yet. Get in touch if you want to contribute.")
+    } else if (method %in% c("blomqvist", "median", "medial")) {
+      stop("Bayesian Blomqvist correlations are not supported yet. Check-out the BBcor package (https://github.com/donaldRwilliams/BBcor).")
+    } else if (method %in% c("hoeffding")) {
+      stop("Bayesian Hoeffding's correlations are not supported yet. Check-out the BBcor package (https://github.com/donaldRwilliams/BBcor).")
+    } else if (method %in% c("gamma")) {
+      stop("Bayesian gamma correlations are not supported yet. Get in touch if you want to contribute.")
     } else if (method %in% c("shepherd", "sheperd", "shepherdspi", "pi")) {
       out <- .cor_test_shepherd(data, x, y, ci = ci, bayesian = TRUE, ...)
     } else {
-      out <- .cor_test_bayes(data, x, y, ci = ci, bayesian_prior = bayesian_prior, bayesian_ci_method = bayesian_ci_method, bayesian_test = bayesian_test, ...)
+      out <- .cor_test_bayes(data, x, y, ci = ci, method = method, bayesian_prior = bayesian_prior, bayesian_ci_method = bayesian_ci_method, bayesian_test = bayesian_test, ...)
     }
   }
 
+  # Replace by NANs if invalid
+  if(isTRUE(invalid)){
+    data <- original_info$data
+    out$Parameter1 <- original_info$x
+    out$Parameter2 <- original_info$y
+    out[!names(out) %in% c("Parameter1", "Parameter2")] <- NA
+  }
+
   # Number of observations
-  out$n_Obs <- sum(stats::complete.cases(data[[x]], data[[y]]))
+  out$n_Obs <- n_obs
 
   # Reorder columns
   if ("CI_low" %in% names(out)) {

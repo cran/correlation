@@ -1,3 +1,24 @@
+# correlation 0.4.0
+
+## Changes
+
+- Don't error if less than 3 valid observations ([#100](https://github.com/easystats/correlation/issues/100))
+- Add "gaussian" rank method
+- Add "gamma" method
+- Add "hoeffding" method
+- Add "blomqvist" method
+
+## Bug fixes
+
+- Added `Method` column to Bayesian correlations
+- Fix bug when `robust=TRUE` ([#87](https://github.com/easystats/effectsize/issues/87))
+
+# correlation 0.3.0
+
+## Changes
+
+## Bug fixes
+
 # correlation 0.2.1
 
 ## Changes
