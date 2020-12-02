@@ -4,15 +4,16 @@
 #'
 #' @param data A data frame.
 #' @param x,y Names of two variables present in the data.
-#' @param ci Confidence/Credible Interval level. If "default", then it is set to 0.95 (95\% CI).
-#' @param method A character string indicating which correlation coefficient is to be used for the test. One of "pearson" (default), "kendall", or "spearman", "biserial", "polychoric", "tetrachoric", "biweight", "distance", "percentage" (for percentage bend correlation), "blomqvist" (for Blomqvist's coefficient), "hoeffding" (for Hoeffding's D), "gamma", "gaussian" (for Gaussian Rank correlation) or "shepherd" (for Shepherd's Pi correlation). Setting "auto" will attempt at selecting the most relevant method (polychoric when ordinal factors involved, tetrachoric when dichotomous factors involved, point-biserial if one dichotomous and one continuous and pearson otherwise).
+#' @param ci Confidence/Credible Interval level. If \code{"default"}, then it is set to 0.95 (95\% CI).
+#' @param method A character string indicating which correlation coefficient is to be used for the test. One of \code{"pearson"} (default), \code{"kendall"}, \code{"spearman"}, \code{"biserial"}, \code{"polychoric"}, \code{"tetrachoric"}, \code{"biweight"}, \code{"distance"}, \code{"percentage"} (for percentage bend correlation), \code{"blomqvist"} (for Blomqvist's coefficient), \code{"hoeffding"} (for Hoeffding's D), \code{"gamma"}, \code{"gaussian"} (for Gaussian Rank correlation) or \code{"shepherd"} (for Shepherd's Pi correlation). Setting \code{"auto"} will attempt at selecting the most relevant method (polychoric when ordinal factors involved, tetrachoric when dichotomous factors involved, point-biserial if one dichotomous and one continuous and pearson otherwise).
 #' @param bayesian,partial_bayesian If TRUE, will run the correlations under a Bayesian framework. Note that for partial correlations, you will also need to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian partial correlations. Otherwise, you will obtain pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on frequentist partialization).
 #' @param include_factors If \code{TRUE}, the factors are kept and eventually converted to numeric or used as random effects (depending of \code{multilevel}). If \code{FALSE}, factors are removed upfront.
-#' @param partial Can be TRUE or "semi" for partial and semi-partial correlations, respectively.
+#' @param partial Can be \code{TRUE} or \code{"semi"} for partial and semi-partial correlations, respectively.
 #' @inheritParams effectsize::adjust
-#' @param bayesian_prior For the prior argument, several named values are recognized: "medium.narrow", "medium", "wide", and "ultrawide". These correspond to scale values of 1/sqrt(27), 1/3, 1/sqrt(3) and 1, respectively. See the \code{BayesFactor::correlationBF} function.
+#' @param bayesian_prior For the prior argument, several named values are recognized: \code{"medium.narrow"}, \code{"medium"}, \code{"wide"}, and \code{"ultrawide"}. These correspond to scale values of \code{1/sqrt(27)}, \code{1/3}, \code{1/sqrt(3)} and \code{1}, respectively. See the \code{BayesFactor::correlationBF} function.
 #' @param bayesian_ci_method,bayesian_test See arguments in \code{\link[=parameters]{model_parameters}} for \code{BayesFactor} tests.
 #' @param robust If TRUE, will rank-transform the variables prior to estimating the correlation. Note that, for instance, a Pearson's correlation on rank-transformed data is equivalent to a Spearman's rank correlation. Thus, using \code{robust=TRUE} and \code{method="spearman"} is redundant. Nonetheless, it is an easy way to increase the robustness of the correlation (as well as obtaining Bayesian Spearman rank Correlations).
+#' @param winsorize Either \code{FALSE} or a number between 0 and 1 (e.g., \code{0.2}) that corresponds to the threshold of desired \code{\link[=winsorize]{winsorization}}.
 #' @param ... Arguments passed to or from other methods.
 #'
 #'
@@ -57,6 +58,9 @@
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "pearson", robust = TRUE)
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "spearman", robust = FALSE)
 #'
+#' # Winsorized
+#' cor_test(iris, "Sepal.Length", "Sepal.Width", winsorize = 0.2)
+#'
 #' # Partial
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", partial = TRUE)
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", multilevel = TRUE)
@@ -65,9 +69,25 @@
 #' }
 #'
 #' @importFrom effectsize adjust ranktransform
+#' @importFrom parameters data_to_numeric
 #' @importFrom stats complete.cases
 #' @export
-cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE, bayesian_prior = "medium", bayesian_ci_method = "hdi", bayesian_test = c("pd", "rope", "bf"), include_factors = FALSE, partial = FALSE, partial_bayesian = FALSE, multilevel = FALSE, robust = FALSE, ...) {
+cor_test <- function(data,
+                     x,
+                     y,
+                     method = "pearson",
+                     ci = 0.95,
+                     bayesian = FALSE,
+                     bayesian_prior = "medium",
+                     bayesian_ci_method = "hdi",
+                     bayesian_test = c("pd", "rope", "bf"),
+                     include_factors = FALSE,
+                     partial = FALSE,
+                     partial_bayesian = FALSE,
+                     multilevel = FALSE,
+                     robust = FALSE,
+                     winsorize = FALSE,
+                     ...) {
 
   # Sanity checks
   if (!x %in% names(data) | !y %in% names(data)) stop("The names you entered for x and y are not available in the dataset. Make sure there are no typos!")
@@ -85,6 +105,11 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
     data[[y]] <- effectsize::adjust(data[names(data) != x], multilevel = multilevel, bayesian = partial_bayesian)[[y]]
   }
 
+  # Winsorize
+  if (!isFALSE(winsorize)) {
+    data[c(x, y)] <- winsorize(data[c(x, y)], threshold = winsorize)
+  }
+
   # Robust
   if (robust) {
     data[c(x, y)] <- effectsize::ranktransform(data[c(x, y)], sign = FALSE, method = "average")
@@ -93,10 +118,10 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
   n_obs <- length(.complete_variable_x(data, x, y))
   # This is a trick in case the number of valid observations is lower than 3
   invalid <- FALSE
-  if(n_obs < 3){
+  if (n_obs < 3) {
     warning(paste(x, "and", y, "have less than 3 complete observations. Returning NA."))
     invalid <- TRUE
-    original_info <- list(data=data, x=x, y=y)
+    original_info <- list(data = data, x = x, y = y)
     data <- datasets::mtcars # Basically use a working dataset so the correlation doesn't fail
     x <- "mpg"
     y <- "disp"
@@ -126,6 +151,8 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
       out <- .cor_test_blomqvist(data, x, y, ci = ci, ...)
     } else if (method %in% c("hoeffding")) {
       out <- .cor_test_hoeffding(data, x, y, ci = ci, ...)
+    } else if (method %in% c("somers")) {
+      out <- .cor_test_somers(data, x, y, ci = ci, ...)
     } else if (method %in% c("gamma")) {
       out <- .cor_test_gamma(data, x, y, ci = ci, ...)
     } else if (method %in% c("gaussian")) {
@@ -164,7 +191,7 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
   }
 
   # Replace by NANs if invalid
-  if(isTRUE(invalid)){
+  if (isTRUE(invalid)) {
     data <- original_info$data
     out$Parameter1 <- original_info$x
     out$Parameter2 <- original_info$y
@@ -176,11 +203,12 @@ cor_test <- function(data, x, y, method = "pearson", ci = 0.95, bayesian = FALSE
 
   # Reorder columns
   if ("CI_low" %in% names(out)) {
-    order <- c("Parameter1", "Parameter2", "r", "rho", "CI_low", "CI_high")
+    order <- c("Parameter1", "Parameter2", "r", "rho", "Dxy", "CI_low", "CI_high")
     out <- out[c(order[order %in% names(out)], setdiff(colnames(out), order[order %in% names(out)]))]
   }
 
   # Output
+  attr(out, "coefficient_name") <- c("rho", "r", "tau", "Dxy")[c("rho", "r", "tau", "Dxy") %in% names(out)][1]
   attr(out, "ci") <- ci
   class(out) <- unique(c("easycorrelation", "parameters_model", class(out)))
   out

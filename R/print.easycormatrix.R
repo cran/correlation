@@ -1,5 +1,6 @@
+#' @importFrom insight format_p format_pd format_bf format_value export_table
 #' @export
-print.easycormatrix <- function(x, digits = 2, stars = TRUE, ...) {
+format.easycormatrix <- function(x, digits = 2, stars = TRUE, ...) {
   orig_x <- x
   nums <- sapply(as.data.frame(x), is.numeric)
 
@@ -16,11 +17,11 @@ print.easycormatrix <- function(x, digits = 2, stars = TRUE, ...) {
 
   if (!is.null(p)) {
     if (type == "p") {
-      p[, nums] <- sapply(p[, nums], parameters::format_p, stars_only = TRUE)
+      p[, nums] <- sapply(p[, nums], insight::format_p, stars_only = TRUE)
     } else if (type == "pd") {
-      p[, nums] <- sapply(p[, nums], parameters::format_pd, stars_only = TRUE)
+      p[, nums] <- sapply(p[, nums], insight::format_pd, stars_only = TRUE)
     } else if (type == "BF") {
-      p[, nums] <- sapply(p[, nums], parameters::format_bf, stars_only = TRUE)
+      p[, nums] <- sapply(p[, nums], insight::format_bf, stars_only = TRUE)
     }
 
     # Round and eventually add stars
@@ -32,8 +33,12 @@ print.easycormatrix <- function(x, digits = 2, stars = TRUE, ...) {
     x[, nums] <- sapply(as.data.frame(x)[, nums], insight::format_value, digits = digits)
   }
 
+  as.data.frame(x)
+}
 
 
-  cat(insight::format_table(x))
-  invisible(orig_x)
+#' @export
+print.easycormatrix <- function(x, digits = 2, stars = TRUE, ...) {
+  cat(insight::export_table(format(x, digits = digits, stars = stars), format = "text"))
+  invisible(x)
 }
