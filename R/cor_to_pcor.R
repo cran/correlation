@@ -1,14 +1,28 @@
 #' Correlation Matrix to (Semi) Partial Correlations
 #'
-#' Convert a correlation matrix to a (semi)partial correlation matrix. Partial correlations are a measure of the correlation between two variables that remains after controlling for (i.e., "partialling" out) all the other relationships. They can be used for graphical Gaussian models, as they represent the direct interactions between two variables, conditioned on all remaining variables. This means that the squared partial correlation between a predictor X1 and a response variable Y can be interpreted as the proportion of (unique) variance accounted for by X1 relative to the residual or unexplained variance of Y that cannot be accounted by the other variables.
+#' Convert a correlation matrix to a (semi)partial correlation matrix. Partial
+#' correlations are a measure of the correlation between two variables that
+#' remains after controlling for (i.e., "partialling" out) all the other
+#' relationships. They can be used for graphical Gaussian models, as they
+#' represent the direct interactions between two variables, conditioned on all
+#' remaining variables. This means that the squared partial correlation between
+#' a predictor X1 and a response variable Y can be interpreted as the proportion
+#' of (unique) variance accounted for by X1 relative to the residual or
+#' unexplained variance of Y that cannot be accounted by the other variables.
 #'
-#' The semi-partial correlation is similar to the partial correlation statistic. However, it represents (when squared) the proportion of (unique) variance accounted for by the predictor X1, relative to the total variance of Y. Thus, it might be seen as a better indicator of the "practical relevance" of a predictor, because it is scaled to (i.e., relative to) the total variability in the response variable.
+#' The semi-partial correlation is similar to the partial correlation statistic.
+#' However, it represents (when squared) the proportion of (unique) variance
+#' accounted for by the predictor X1, relative to the total variance of Y. Thus,
+#' it might be seen as a better indicator of the "practical relevance" of a
+#' predictor, because it is scaled to (i.e., relative to) the total variability
+#' in the response variable.
 #'
 #'
 #'
-#' @param cor,pcor,spcor A correlation matrix, or a partial or a semipartial correlation matrix.
-#' @param cov A covariance matrix (or a vector of the SD of the variables). Required for semi-partial correlations.
-#' @param semi Semi-partial correlations.
+#' @param cor,pcor A correlation matrix, or a partial or a semipartial
+#'   correlation matrix.
+#' @param cov A covariance matrix (or a vector of the SD of the variables).
+#'   Required for semi-partial correlations.
 #' @param tol Relative tolerance to detect zero singular values.
 #'
 #' @return The (semi) partial correlation matrix.
@@ -83,19 +97,7 @@ pcor_to_cor.easycorrelation <- function(pcor, tol = .Machine$double.eps^(2 / 3))
 }
 
 
-
-
-
-
-
-
-
-
 # Convenience Functions --------------------------------------------------------
-
-
-
-
 
 #' @keywords internal
 .cor_to_pcor_easycorrelation <- function(pcor = NULL, cor = NULL, tol = .Machine$double.eps^(2 / 3)) {
@@ -126,7 +128,7 @@ pcor_to_cor.easycorrelation <- function(pcor, tol = .Machine$double.eps^(2 / 3))
         CI_low = ci_vals$CI_low[row, col],
         CI_high = ci_vals$CI_high[row, col],
         t = p$statistic[row, col],
-        df = nobs[row, col] - 2,
+        df_error = nobs[row, col] - 2,
         p = p$p[row, col],
         Method = "Pearson",
         n_Obs = nobs[row, col]
@@ -197,11 +199,6 @@ pcor_to_cor.easycorrelation <- function(pcor, tol = .Machine$double.eps^(2 / 3))
 
 
 
-
-
-
-
-
 #' @keywords internal
 .cor_to_pcor <- function(cor, tol = .Machine$double.eps^(2 / 3)) {
   # Get cor
@@ -232,24 +229,7 @@ pcor_to_cor.easycorrelation <- function(pcor, tol = .Machine$double.eps^(2 / 3))
 
 
 
-
-
-
-
-
-
-
-
-
-
 # Internals ---------------------------------------------------------------
-
-
-
-
-
-
-
 
 #' @keywords internal
 .get_cor <- function(cor = NULL, cov = NULL) {

@@ -3,7 +3,9 @@
 #' Winsorization of data.
 #'
 #' @param data Dataframe or vector.
-#' @param threshold The amount of Winsorization.
+#' @param threshold The amount of winsorization.
+#' @param verbose Toggle warnings.
+#' @param ... Currently not used.
 #'
 #' @examples
 #' library(correlation)
@@ -11,14 +13,14 @@
 #' winsorize(iris$Sepal.Length, threshold = 0.2)
 #' winsorize(iris, threshold = 0.2)
 #' @export
-winsorize <- function(data, threshold = 0.2) {
+winsorize <- function(data, ...) {
   UseMethod("winsorize")
 }
 
 
 #' @export
-winsorize.factor <- function(data, threshold = 0.2) {
-  data
+winsorize.factor <- function(data, threshold = 0.2, ...) {
+  stats::na.omit(data)
 }
 
 #' @export
@@ -28,14 +30,21 @@ winsorize.character <- winsorize.factor
 winsorize.logical <- winsorize.factor
 
 #' @export
-winsorize.data.frame <- function(data, threshold = 0.2) {
-  sapply(data, winsorize, threshold = threshold)
+winsorize.data.frame <- function(data, threshold = 0.2, verbose = TRUE, ...) {
+  sapply(stats::na.omit(data), winsorize, threshold = threshold, verbose = verbose)
 }
 
-
+#' @rdname winsorize
 #' @export
-winsorize.numeric <- function(data, threshold = 0.2) {
-  # TODO: This function should go in the future data package.
+winsorize.numeric <- function(data, threshold = 0.2, verbose = TRUE, ...) {
+  if (threshold < 0 || threshold > 1) {
+    if (isTRUE(verbose)) {
+      warning("'threshold' for winsorization must be a scalar between 0 and 1. Did not winsorize data.", call. = FALSE)
+    }
+    return(data)
+  }
+
+  data <- stats::na.omit(data)
   y <- sort(data)
   n <- length(data)
   ibot <- floor(threshold * n) + 1

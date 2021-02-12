@@ -43,6 +43,7 @@
 
 
 
+#' @importFrom stats dnorm qnorm
 #' @keywords internal
 .cor_test_biserial_biserial <- function(data, x, y, continuous, binary, ci) {
   var_x <- .complete_variable_x(data, continuous, binary)
@@ -65,7 +66,7 @@
     Parameter2 = y,
     rho = r,
     t = p$statistic,
-    df = length(var_y) - 2,
+    df_error = length(var_y) - 2,
     p = p$p,
     CI_low = ci_vals$CI_low,
     CI_high = ci_vals$CI_high,

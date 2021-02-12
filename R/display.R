@@ -29,14 +29,16 @@
 #' display(s)
 #' @export
 display.easycormatrix <- function(object, format = "markdown", digits = 2, stars = TRUE, ...) {
-  print_md(x = object, digits = digits, stars = stars, ...)
+  if (format == "markdown") {
+    print_md(x = object, digits = digits, stars = stars, ...)
+  } else {
+    print_html(x = object, digits = digits, stars = stars, ...)
+  }
 }
 
 
 #' @export
 display.easycorrelation <- display.easycormatrix
-
-
 
 
 # Reexports models ------------------------

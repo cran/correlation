@@ -11,6 +11,9 @@
       r = rez$r,
       CI_low = NA,
       CI_high = NA,
+      t = NA,
+      df_error = NA,
+      p = NA,
       Method = "Distance"
     )
   } else {
@@ -22,11 +25,13 @@
       CI_low = rez$CI_low,
       CI_high = rez$CI_high,
       t = rez$t,
-      df = rez$df,
+      df_error = rez$df,
       p = rez$p,
       Method = "Distance (Bias Corrected)"
     )
   }
+
+  rez
 }
 
 
@@ -62,7 +67,7 @@
   list(
     r = r,
     t = t,
-    df = dof,
+    df_error = dof,
     p = p,
     CI_low = ci_vals$CI_low,
     CI_high = ci_vals$CI_high
