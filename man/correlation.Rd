@@ -7,6 +7,8 @@
 correlation(
   data,
   data2 = NULL,
+  select = NULL,
+  select2 = NULL,
   method = "pearson",
   p_adjust = "holm",
   ci = 0.95,
@@ -19,7 +21,8 @@ correlation(
   partial = FALSE,
   partial_bayesian = FALSE,
   multilevel = FALSE,
-  robust = FALSE,
+  ranktransform = FALSE,
+  robust = NULL,
   winsorize = FALSE,
   verbose = TRUE,
   ...
@@ -28,11 +31,23 @@ correlation(
 \arguments{
 \item{data}{A data frame.}
 
-\item{data2}{An optional data frame.}
+\item{data2}{An optional data frame. If specified, all pair-wise correlations
+between the variables in \code{data} and \code{data2} will be computed.}
+
+\item{select, select2}{(Ignored if \code{data2} is specified.) Optional names
+of variables that should be selected for correlation. Instead of providing
+the data frames with those variables that should be correlated, \code{data}
+can be a data frame and \code{select} and \code{select2} are (quoted) names
+of variables (columns) in \code{data}. \code{correlation()} will then
+compute the correlation between \code{data[select]} and
+\code{data[select2]}. If only \code{select} is specified, all pair-wise
+correlations between the \code{select} variables will be computed. This is
+a "pipe-friendly" alternative way of using \code{correlation()} (see
+'Examples').}
 
 \item{method}{A character string indicating which correlation coefficient is
 to be used for the test. One of \code{"pearson"} (default),
-\code{"kendall"}, \code{"spearman"}, \code{"biserial"},
+\code{"kendall"}, \code{"spearman"} (but see also the \code{robust} argument), \code{"biserial"},
 \code{"polychoric"}, \code{"tetrachoric"}, \code{"biweight"},
 \code{"distance"}, \code{"percentage"} (for percentage bend correlation),
 \code{"blomqvist"} (for Blomqvist's coefficient), \code{"hoeffding"} (for
@@ -92,16 +107,23 @@ partialization).}
 Else, if \code{FALSE} (default), they are included as fixed effects in the
 simple regression model.}
 
-\item{robust}{If \code{TRUE}, will rank-transform the variables prior to
-estimating the correlation. Note that, for instance, a Pearson's
+\item{ranktransform}{If \code{TRUE}, will rank-transform the variables prior to
+estimating the correlation, which is one way of making the analysis more
+resistant to extreme values (outliers). Note that, for instance, a Pearson's
 correlation on rank-transformed data is equivalent to a Spearman's rank
 correlation. Thus, using \code{robust=TRUE} and \code{method="spearman"} is
-redundant. Nonetheless, it is an easy way to increase the robustness of the
-correlation (as well as obtaining Bayesian Spearman rank Correlations).}
+redundant. Nonetheless, it is an easy option to increase the robustness of the
+correlation as well as flexible way to obtain Bayesian or multilevel
+Spearman-like rank correlations.}
 
-\item{winsorize}{Either \code{FALSE} or a number between 0 and 1 (e.g.,
-\code{0.2}) that corresponds to the threshold of desired
-\code{\link[=winsorize]{winsorization}}.}
+\item{robust}{Old name for \code{ranktransform}. Will be removed in subsequent
+versions, so better to use \code{ranktransform} which is more explicit about
+what it does.}
+
+\item{winsorize}{Another way of making the correlation more "robust" (i.e.,
+limiting the impact of extreme values). Can be either \code{FALSE} or a
+number between 0 and 1 (e.g., \code{0.2}) that corresponds to the desired
+threshold. See the \code{\link[=winsorize]{winsorize()}} function for more details.}
 
 \item{verbose}{Toggle warnings.}
 
@@ -113,7 +135,9 @@ A correlation object that can be displayed using the \code{print},
   \code{summary} or \code{table} methods.
 
 \subsection{Multiple tests correction}{
-About multiple tests corrections.
+The \code{p_adjust} argument can be used to adjust p-values for multiple
+comparisons. All adjustment methods available in \code{p.adjust} function
+\code{stats} package are supported.
 }
 }
 \description{
@@ -240,6 +264,10 @@ default), then a back-transformation from partial to non-partial correlation
 will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor}}). However,
 this is not possible when using \code{cor_test()} so that if you set
 \code{multilevel=TRUE} in it, the resulting correlations are partial one.
+Note that for Bayesian multilevel correlations, if \code{partial = FALSE},
+the back transformation will also recompute p-values based on the new r scores,
+and will drop the Bayes factors (as they are not relevant anymore). To keep
+Bayesian scores, don't forget to set \code{partial = TRUE}.
 }
 
 \subsection{Notes}{
@@ -247,7 +275,6 @@ this is not possible when using \code{cor_test()} so that if you set
   \item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
   are technically Pearson Bayesian correlations of rank transformed data,
   rather than pure Bayesian rank correlations (which have different priors).
-
 }}
 }
 \examples{
@@ -258,11 +285,26 @@ results
 summary(results)
 summary(results, redundant = TRUE)
 
+# pipe-friendly usage
+if (require("dplyr")) {
+  iris \%>\%
+    correlation(select = "Petal.Width", select2 = "Sepal.Length")
+}
+
 # Grouped dataframe
 if (require("dplyr")) {
+  # grouped correlations
   iris \%>\%
     group_by(Species) \%>\%
     correlation()
+
+  # selecting specific variables for correlation
+  mtcars \%>\%
+    group_by(am) \%>\%
+    correlation(
+      select = c("cyl", "wt"),
+      select2 = c("hp")
+    )
 }
 
 # automatic selection of correlation method

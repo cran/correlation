@@ -1,22 +1,30 @@
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
+## ----cite---------------------------------------------------------------------
+citation("correlation")
+
+## ---- include=FALSE-----------------------------------------------------------
 library(knitr)
 options(
   knitr.kable.NA = "",
   digits = 2,
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE,
   dpi = 450
 )
 
-
-if (!requireNamespace("ggplot2", quietly = TRUE)) {
+if (!requireNamespace("ggplot2", quietly = TRUE) ||
+  !requireNamespace("lme4", quietly = TRUE)) {
   knitr::opts_chunk$set(eval = FALSE)
 }
 
-## ----message=FALSE, warning=FALSE---------------------------------------------
+## -----------------------------------------------------------------------------
 library(correlation)
 
 data <- simulate_simpson(n = 100, groups = 10)
 
-## ----message=FALSE, warning=FALSE---------------------------------------------
+summary(data)
+
+## -----------------------------------------------------------------------------
 library(ggplot2)
 
 ggplot(data, aes(x = V1, y = V2)) +
@@ -24,10 +32,10 @@ ggplot(data, aes(x = V1, y = V2)) +
   geom_smooth(colour = "black", method = "lm", se = FALSE) +
   theme_classic()
 
-## ----message=FALSE, warning=FALSE---------------------------------------------
+## -----------------------------------------------------------------------------
 correlation(data)
 
-## ----message=FALSE, warning=FALSE---------------------------------------------
+## -----------------------------------------------------------------------------
 library(ggplot2)
 
 ggplot(data, aes(x = V1, y = V2)) +
@@ -36,6 +44,9 @@ ggplot(data, aes(x = V1, y = V2)) +
   geom_smooth(colour = "black", method = "lm", se = FALSE) +
   theme_classic()
 
-## ----message=FALSE, warning=FALSE---------------------------------------------
+## -----------------------------------------------------------------------------
 correlation(data, multilevel = TRUE)
+
+## -----------------------------------------------------------------------------
+correlation(data, multilevel = TRUE, bayesian = TRUE)
 

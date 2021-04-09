@@ -1,4 +1,23 @@
-# correlation 0.5.1
+# correlation 0.6.1
+
+## Breaking Changes
+
+- `robust` argument deprecated in favour of `ranktransform`.
+
+## New Features
+
+- `correlation` gains two new arguments: `select` and `select2` to select
+  specific variables from dataframes to compare (#146).
+  
+- `as.matrix` method works for grouped correlations (#148).
+
+## Bug Fixes
+
+- The `0.6.0` release introduced a bug in Winsorized Pearson correlation where
+  the missing values were removed from the entire data, instead for each pair
+  (#151). This is now fixed.
+
+# correlation 0.6.0
 
 ## New Features
 

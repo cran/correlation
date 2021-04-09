@@ -18,7 +18,8 @@ cor_test(
   partial = FALSE,
   partial_bayesian = FALSE,
   multilevel = FALSE,
-  robust = FALSE,
+  ranktransform = FALSE,
+  robust = NULL,
   winsorize = FALSE,
   verbose = TRUE,
   ...
@@ -31,7 +32,7 @@ cor_test(
 
 \item{method}{A character string indicating which correlation coefficient is
 to be used for the test. One of \code{"pearson"} (default),
-\code{"kendall"}, \code{"spearman"}, \code{"biserial"},
+\code{"kendall"}, \code{"spearman"} (but see also the \code{robust} argument), \code{"biserial"},
 \code{"polychoric"}, \code{"tetrachoric"}, \code{"biweight"},
 \code{"distance"}, \code{"percentage"} (for percentage bend correlation),
 \code{"blomqvist"} (for Blomqvist's coefficient), \code{"hoeffding"} (for
@@ -72,16 +73,23 @@ semi-partial correlations, respectively.}
 Else, if \code{FALSE} (default), they are included as fixed effects in the
 simple regression model.}
 
-\item{robust}{If \code{TRUE}, will rank-transform the variables prior to
-estimating the correlation. Note that, for instance, a Pearson's
+\item{ranktransform}{If \code{TRUE}, will rank-transform the variables prior to
+estimating the correlation, which is one way of making the analysis more
+resistant to extreme values (outliers). Note that, for instance, a Pearson's
 correlation on rank-transformed data is equivalent to a Spearman's rank
 correlation. Thus, using \code{robust=TRUE} and \code{method="spearman"} is
-redundant. Nonetheless, it is an easy way to increase the robustness of the
-correlation (as well as obtaining Bayesian Spearman rank Correlations).}
+redundant. Nonetheless, it is an easy option to increase the robustness of the
+correlation as well as flexible way to obtain Bayesian or multilevel
+Spearman-like rank correlations.}
 
-\item{winsorize}{Either \code{FALSE} or a number between 0 and 1 (e.g.,
-\code{0.2}) that corresponds to the threshold of desired
-\code{\link[=winsorize]{winsorization}}.}
+\item{robust}{Old name for \code{ranktransform}. Will be removed in subsequent
+versions, so better to use \code{ranktransform} which is more explicit about
+what it does.}
+
+\item{winsorize}{Another way of making the correlation more "robust" (i.e.,
+limiting the impact of extreme values). Can be either \code{FALSE} or a
+number between 0 and 1 (e.g., \code{0.2}) that corresponds to the desired
+threshold. See the \code{\link[=winsorize]{winsorize()}} function for more details.}
 
 \item{verbose}{Toggle warnings.}
 
@@ -212,6 +220,10 @@ default), then a back-transformation from partial to non-partial correlation
 will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor}}). However,
 this is not possible when using \code{cor_test()} so that if you set
 \code{multilevel=TRUE} in it, the resulting correlations are partial one.
+Note that for Bayesian multilevel correlations, if \code{partial = FALSE},
+the back transformation will also recompute p-values based on the new r scores,
+and will drop the Bayes factors (as they are not relevant anymore). To keep
+Bayesian scores, don't forget to set \code{partial = TRUE}.
 }
 
 \subsection{Notes}{
@@ -219,7 +231,6 @@ this is not possible when using \code{cor_test()} so that if you set
   \item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
   are technically Pearson Bayesian correlations of rank transformed data,
   rather than pure Bayesian rank correlations (which have different priors).
-
 }}
 }
 \examples{
@@ -264,8 +275,8 @@ if (require("psych", quietly = TRUE)) {
 }
 
 # Robust (these two are equivalent)
-cor_test(iris, "Sepal.Length", "Sepal.Width", method = "pearson", robust = TRUE)
-cor_test(iris, "Sepal.Length", "Sepal.Width", method = "spearman", robust = FALSE)
+cor_test(iris, "Sepal.Length", "Sepal.Width", method = "spearman")
+cor_test(iris, "Sepal.Length", "Sepal.Width", method = "pearson", ranktransform = TRUE)
 
 # Winsorized
 cor_test(iris, "Sepal.Length", "Sepal.Width", winsorize = 0.2)

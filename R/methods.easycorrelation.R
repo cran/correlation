@@ -1,5 +1,5 @@
 #' @export
-summary.easycorrelation <- function(object, redundant = FALSE, stars = TRUE, ...) {
+summary.easycorrelation <- function(object, redundant = FALSE, ...) {
 
   # If data2 is present
   if (!is.null(attributes(object)$data2)) {
@@ -29,10 +29,16 @@ summary.easycorrelation <- function(object, redundant = FALSE, stars = TRUE, ...
   # Transfer attributes
   attributes(out) <-
     c(attributes(out), attributes(object)[!names(attributes(object)) %in% c("names", "row.names", "class", names(attributes(out)))])
-  attr(out, "stars") <- stars
+  attributes(out) <- c(attributes(out), list(...))
   attr(out, "redundant") <- redundant
   attr(out, "coefficient_name") <- target_col
-  class(out) <- c("easycormatrix", "see_easycormatrix", class(out))
+
+  if (inherits(object, "grouped_easycorrelation")) {
+    class(out) <- c("easycormatrix", "see_easycormatrix", "grouped_easycormatrix", class(out))
+  } else {
+    class(out) <- c("easycormatrix", "see_easycormatrix", class(out))
+  }
+
   out
 }
 
@@ -51,8 +57,18 @@ as.table.easycorrelation <- function(x, ...) {
 #' @export
 as.matrix.easycorrelation <- function(x, ...) {
   mat <- summary(x, redundant = TRUE)
-  row.names(mat) <- mat$Parameter
-  mat <- mat[-1]
+
+  if (inherits(mat, "grouped_easycormatrix")) {
+    mat$Parameter <- paste(mat$Group, "-", mat$Parameter)
+    row.names(mat) <- mat$Parameter
+    mat <- mat[-c(1:2)]
+    # self-correlations
+    mat[is.na(mat)] <- 1
+  } else {
+    row.names(mat) <- mat$Parameter
+    mat <- mat[-1]
+  }
+
   as.matrix(mat)
 }
 

@@ -8,8 +8,9 @@
 #'   or its summary.
 #' @param format String, indicating the output format. Currently, only
 #'   \code{"markdown"} is supported.
-#' @param digits To do...
+#' @param digits,p_digits To do...
 #' @param stars To do...
+#' @param include_significance To do...
 #' @param ... Currently not used.
 #'
 #' @return A character vector. If \code{format = "markdown"}, the return value
@@ -28,17 +29,62 @@
 #' s <- summary(corr)
 #' display(s)
 #' @export
-display.easycormatrix <- function(object, format = "markdown", digits = 2, stars = TRUE, ...) {
+display.easycormatrix <- function(object,
+                                  format = "markdown",
+                                  digits = 2,
+                                  p_digits = 3,
+                                  stars = TRUE,
+                                  include_significance = NULL,
+                                  ...) {
   if (format == "markdown") {
-    print_md(x = object, digits = digits, stars = stars, ...)
+    print_md(
+      x = object,
+      digits = digits,
+      p_digits = p_digits,
+      stars = stars,
+      include_significance = include_significance,
+      ...
+    )
   } else {
-    print_html(x = object, digits = digits, stars = stars, ...)
+    print_html(
+      x = object,
+      digits = digits,
+      p_digits = p_digits,
+      stars = stars,
+      include_significance = include_significance,
+      ...
+    )
   }
 }
 
 
 #' @export
-display.easycorrelation <- display.easycormatrix
+display.easycorrelation <- function(object,
+                                    format = "markdown",
+                                    digits = 2,
+                                    p_digits = 3,
+                                    stars = TRUE,
+                                    ...) {
+  if (format == "markdown") {
+    print_md(
+      x = object,
+      digits = digits,
+      p_digits = p_digits,
+      stars = stars,
+      ...
+    )
+  } else {
+    print_html(
+      x = object,
+      digits = digits,
+      p_digits = p_digits,
+      stars = stars,
+      ...
+    )
+  }
+}
+
+
 
 
 # Reexports models ------------------------

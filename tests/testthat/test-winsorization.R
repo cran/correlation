@@ -19,7 +19,7 @@ test_that("testing Winsorized correlation", {
     params4 <- as.data.frame(correlation(df, winsorize = 0.3, bayesian = TRUE, bayesian_prior = 0.8))
 
     set.seed(123)
-    mod1 <- WRS2::wincor(df$x, df$y, tr = 0.1)
+    mod1 <- WRS2::wincor(df$x, df$y, tr = 0.2)
     mod2 <- WRS2::wincor(df$x, df$y, tr = 0.3)
 
     expect_equal(params1$r, mod1$cor, tolerance = 0.001)
@@ -30,13 +30,12 @@ test_that("testing Winsorized correlation", {
 
     expect_identical(params1$Method[[1]], "Winsorized Pearson correlation")
 
-    expect_equal(params3$rho, -0.8523543, tolerance = 0.001)
+    expect_equal(params3$rho, -0.816316, tolerance = 0.01)
     expect_equal(params4$rho, -0.8242469, tolerance = 0.001)
 
-    # if (packageVersion("insight") >= "0.12.0.1") {
-    #   expect_equal(params3$Prior_Location, 3, tolerance = 0.1)
-    #   expect_equal(params4$Prior_Location, -1.25, tolerance = 0.1)
-    # }
+    if (require("ggplot2")) {
+      expect_snapshot(correlation(ggplot2::msleep, winsorize = 0.2, p_adjust = "none"))
+    }
   }
 })
 
@@ -45,5 +44,5 @@ test_that("testing Winsorization of factors", {
 })
 
 test_that("with missing values", {
-  expect_equal(length(winsorize(as.factor(ggplot2::msleep$vore))), 76)
+  expect_equal(length(winsorize(as.factor(ggplot2::msleep$vore))), 83)
 })

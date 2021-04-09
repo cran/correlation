@@ -23,12 +23,10 @@
     Code
       print(correlation(subset(mtcars, select = c("wt", "mpg"))), format = "html")
     Output
-      # Correlation table (pearson-method)
+      Correlation Matrix (pearson-method)
       
       Parameter1 | Parameter2 |     r |         95% CI | t(30) |         p
       --------------------------------------------------------------------
       wt         |        mpg | -0.87 | [-0.93, -0.74] | -9.56 | < .001***
-      
-      p-value adjustment method: Holm (1979)
-      Observations: 32
+      p-value adjustment method: Holm (1979)Observations: 32
 

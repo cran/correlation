@@ -1,9 +1,9 @@
 
 test_that("comparison with other packages", {
-  if (requireNamespace("ppcor") &
-    requireNamespace("Hmisc") &
-    requireNamespace("dplyr")) {
-    library(dplyr)
+  if (requireNamespace("ppcor") &&
+    requireNamespace("Hmisc") &&
+    require("lme4", quietly = TRUE) &&
+    require("dplyr")) {
     set.seed(333)
 
     # Pearson
@@ -136,6 +136,21 @@ test_that("format checks", {
     expect_equal(c(nrow(out), ncol(out)), c(18, 12))
     expect_equal(c(nrow(summary(out, redundant = TRUE)), ncol(summary(out, redundant = TRUE))), c(12, 6))
     expect_equal(c(nrow(summary(out)), ncol(summary(out))), c(9, 5))
+  }
+
+  # pipe and select
+  if (requireNamespace("dplyr")) {
+    out <- iris %>%
+      correlation(
+        select = "Petal.Width",
+        select2 = c("Sepal.Length", "Sepal.Width")
+      )
+    expect_equal(c(nrow(out), ncol(out)), c(2, 11))
+    expect_equal(c(nrow(summary(out, redundant = TRUE)), ncol(summary(out, redundant = TRUE))), c(1, 3))
+    expect_equal(c(nrow(summary(out)), ncol(summary(out))), c(1, 3))
+    expect_equal(out[["r"]], c(0.8179, -0.3661), tolerance = 1e-2)
+    expect_equal(out$Parameter1, c("Petal.Width", "Petal.Width"))
+    expect_equal(out$Parameter2, c("Sepal.Length", "Sepal.Width"))
   }
 
   # Bayesian full partial

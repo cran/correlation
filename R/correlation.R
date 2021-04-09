@@ -3,7 +3,18 @@
 #' Performs a correlation analysis.
 #'
 #' @param data A data frame.
-#' @param data2 An optional data frame.
+#' @param data2 An optional data frame. If specified, all pair-wise correlations
+#'   between the variables in \code{data} and \code{data2} will be computed.
+#' @param select,select2 (Ignored if \code{data2} is specified.) Optional names
+#'   of variables that should be selected for correlation. Instead of providing
+#'   the data frames with those variables that should be correlated, \code{data}
+#'   can be a data frame and \code{select} and \code{select2} are (quoted) names
+#'   of variables (columns) in \code{data}. \code{correlation()} will then
+#'   compute the correlation between \code{data[select]} and
+#'   \code{data[select2]}. If only \code{select} is specified, all pair-wise
+#'   correlations between the \code{select} variables will be computed. This is
+#'   a "pipe-friendly" alternative way of using \code{correlation()} (see
+#'   'Examples').
 #' @param p_adjust Correction method for frequentist correlations. Can be one of
 #'   \code{"holm"} (default), \code{"hochberg"}, \code{"hommel"},
 #'   \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"},
@@ -135,6 +146,10 @@
 #' will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor}}). However,
 #' this is not possible when using \code{cor_test()} so that if you set
 #' \code{multilevel=TRUE} in it, the resulting correlations are partial one.
+#' Note that for Bayesian multilevel correlations, if \code{partial = FALSE},
+#' the back transformation will also recompute p-values based on the new r scores,
+#' and will drop the Bayes factors (as they are not relevant anymore). To keep
+#' Bayesian scores, don't forget to set \code{partial = TRUE}.
 #' }
 #'
 #' \subsection{Notes}{
@@ -142,14 +157,15 @@
 #'   \item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
 #'   are technically Pearson Bayesian correlations of rank transformed data,
 #'   rather than pure Bayesian rank correlations (which have different priors).
-#'
 #' }}
 #'
 #' @return A correlation object that can be displayed using the \code{print},
 #'   \code{summary} or \code{table} methods.
 #'
 #' \subsection{Multiple tests correction}{
-#' About multiple tests corrections.
+#' The \code{p_adjust} argument can be used to adjust p-values for multiple
+#' comparisons. All adjustment methods available in \code{p.adjust} function
+#' \code{stats} package are supported.
 #' }
 #'
 #' @examples
@@ -160,11 +176,26 @@
 #' summary(results)
 #' summary(results, redundant = TRUE)
 #'
+#' # pipe-friendly usage
+#' if (require("dplyr")) {
+#'   iris %>%
+#'     correlation(select = "Petal.Width", select2 = "Sepal.Length")
+#' }
+#'
 #' # Grouped dataframe
 #' if (require("dplyr")) {
+#'   # grouped correlations
 #'   iris %>%
 #'     group_by(Species) %>%
 #'     correlation()
+#'
+#'   # selecting specific variables for correlation
+#'   mtcars %>%
+#'     group_by(am) %>%
+#'     correlation(
+#'       select = c("cyl", "wt"),
+#'       select2 = c("hp")
+#'     )
 #' }
 #'
 #' # automatic selection of correlation method
@@ -200,6 +231,8 @@
 #' @export
 correlation <- function(data,
                         data2 = NULL,
+                        select = NULL,
+                        select2 = NULL,
                         method = "pearson",
                         p_adjust = "holm",
                         ci = 0.95,
@@ -212,10 +245,17 @@ correlation <- function(data,
                         partial = FALSE,
                         partial_bayesian = FALSE,
                         multilevel = FALSE,
-                        robust = FALSE,
+                        ranktransform = FALSE,
+                        robust = NULL,
                         winsorize = FALSE,
                         verbose = TRUE,
                         ...) {
+
+  # Deprecation warnings
+  if (!is.null(robust)) {
+    warning("The 'robust' argument is deprecated in favour of 'ranktransform' (more explicit). Please use the latter instead to remove this warning.")
+    ranktransform <- robust
+  }
 
   # Sanity checks
   if (partial == FALSE & multilevel) {
@@ -235,6 +275,31 @@ correlation <- function(data,
     ci <- 0.95
   }
 
+  if (is.null(data2) && !is.null(select)) {
+    # check for valid names
+    all_selected <- c(select, select2)
+    not_in_data <- !all_selected %in% colnames(data)
+    if (any(not_in_data)) {
+      stop(paste0("Following variables are not in the data: ", all_selected[not_in_data], collapse = ", "))
+    }
+
+    # for grouped df, add group variables to both data frames
+    if (inherits(data, "grouped_df")) {
+      grp_df <- attributes(data)$groups
+      grp_var <- setdiff(colnames(grp_df), ".rows")
+      select <- unique(c(select, grp_var))
+      select2 <- if (!is.null(select2)) unique(c(select2, grp_var))
+    } else {
+      grp_df <- NULL
+    }
+
+
+    data2 <- if (!is.null(select2)) data[select2]
+    data <- data[select]
+
+    attr(data, "groups") <- grp_df
+    attr(data2, "groups") <- if (!is.null(select2)) grp_df
+  }
 
   if (inherits(data, "grouped_df")) {
     rez <- .correlation_grouped_df(
@@ -252,7 +317,7 @@ correlation <- function(data,
       partial = partial,
       partial_bayesian = partial_bayesian,
       multilevel = multilevel,
-      robust = robust,
+      ranktransform = ranktransform,
       winsorize = winsorize,
       verbose = verbose,
       ...
@@ -273,7 +338,7 @@ correlation <- function(data,
       partial = partial,
       partial_bayesian = partial_bayesian,
       multilevel = multilevel,
-      robust = robust,
+      ranktransform = ranktransform,
       winsorize = winsorize,
       verbose = verbose,
       ...
@@ -302,7 +367,11 @@ correlation <- function(data,
 
   attr(out, "additional_arguments") <- list(...)
 
-  class(out) <- unique(c("easycorrelation", "see_easycorrelation", "parameters_model", class(out)))
+  if (inherits(data, "grouped_df")) {
+    class(out) <- unique(c("easycorrelation", "see_easycorrelation", "grouped_easycorrelation", "parameters_model", class(out)))
+  } else {
+    class(out) <- unique(c("easycorrelation", "see_easycorrelation", "parameters_model", class(out)))
+  }
 
   if (convert_back_to_r) out <- pcor_to_cor(pcor = out) # Revert back to r if needed.
   out
@@ -326,7 +395,7 @@ correlation <- function(data,
                                     partial = FALSE,
                                     partial_bayesian = FALSE,
                                     multilevel = FALSE,
-                                    robust = FALSE,
+                                    ranktransform = FALSE,
                                     winsorize = FALSE,
                                     verbose = TRUE,
                                     ...) {
@@ -361,7 +430,7 @@ correlation <- function(data,
             partial = partial,
             partial_bayesian = partial_bayesian,
             multilevel = multilevel,
-            robust = robust,
+            ranktransform = ranktransform,
             winsorize = winsorize
           )
           modelframe_current <- rez$data
@@ -394,7 +463,7 @@ correlation <- function(data,
         partial = partial,
         partial_bayesian = partial_bayesian,
         multilevel = multilevel,
-        robust = robust,
+        ranktransform = ranktransform,
         winsorize = winsorize
       )
       modelframe_current <- rez$data
@@ -426,7 +495,7 @@ correlation <- function(data,
                          partial = FALSE,
                          partial_bayesian = FALSE,
                          multilevel = FALSE,
-                         robust = FALSE,
+                         ranktransform = FALSE,
                          winsorize = FALSE,
                          verbose = TRUE,
                          ...) {
@@ -473,7 +542,8 @@ correlation <- function(data,
       verbose <- FALSE
     }
 
-    result <- cor_test(data,
+    result <- cor_test(
+      data,
       x = x,
       y = y,
       ci = ci,
@@ -484,7 +554,7 @@ correlation <- function(data,
       bayesian_test = bayesian_test,
       partial = partial,
       multilevel = multilevel,
-      robust = robust,
+      ranktransform = ranktransform,
       winsorize = winsorize,
       verbose = verbose,
       ...
@@ -523,7 +593,7 @@ correlation <- function(data,
 
   # P-values adjustments
   if ("p" %in% names(params)) {
-    params$p <- stats::p.adjust(params$p, method = p_adjust, n = nrow(params))
+    params$p <- stats::p.adjust(params$p, method = p_adjust)
   }
 
   # Redundant
@@ -535,7 +605,6 @@ correlation <- function(data,
     params <- params[!params$Parameter1 %in% names(data2), ]
     params <- params[params$Parameter2 %in% names(data2), ]
   }
-
 
   list(params = params, data = data)
 }
