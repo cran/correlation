@@ -16,24 +16,22 @@ bend** or **Sheperd’s Pi** correlations (types of robust correlation),
 also allowing for combinations between them (for instance, *Bayesian
 partial multilevel correlation*).
 
-## Citation
+# Citation
 
 You can reference the package and its documentation as follows:
 
 Makowski, D., Ben-Shachar, M. S., Patil, I., & Lüdecke, D. (2019).
-*Methods and Algorithms for Correlation Analysis in R*. Journal of Open
-Source Software, *5*(51), 2306.
-[10.21105/joss.02306](https://doi.org/10.21105/joss.02306)
+Methods and Algorithms for Correlation Analysis in R. *Journal of Open
+Source Software*, *5*(51), 2306. <https://doi.org/10.21105/joss.02306>
 
-## Installation
+# Installation
 
 [![CRAN](http://www.r-pkg.org/badges/version/correlation)](https://cran.r-project.org/package=correlation)
 [![Build
 Status](https://travis-ci.org/easystats/correlation.svg?branch=master)](https://travis-ci.org/easystats/correlation)
 [![codecov](https://codecov.io/gh/easystats/correlation/branch/master/graph/badge.svg)](https://codecov.io/gh/easystats/correlation)
 
-Run the following to install the stable release of **correlation** from
-CRAN:
+Run the following to install the stable release from CRAN:
 
 ``` r
 install.packages("correlation")
@@ -46,43 +44,35 @@ install.packages("remotes")
 remotes::install_github("easystats/correlation")
 ```
 
-## Documentation
+# Documentation
 
 [![Documentation](https://img.shields.io/badge/documentation-correlation-orange.svg?colorB=E91E63)](https://easystats.github.io/correlation/)
 [![Blog](https://img.shields.io/badge/blog-easystats-orange.svg?colorB=FF9800)](https://easystats.github.io/blog/posts/)
 [![Features](https://img.shields.io/badge/features-correlation-orange.svg?colorB=2196F3)](https://easystats.github.io/correlation/reference/index.html)
 
 Click on the buttons above to access the package
-[**documentation**](https://easystats.github.io/correlation/) and the
-[**easystats blog**](https://easystats.github.io/blog/posts/), and
-check-out these vignettes:
+[documentation](https://easystats.github.io/correlation/) and the
+[easystats blog](https://easystats.github.io/blog/posts/), and check-out
+these vignettes:
 
--   [**Types of
-    Correlation**](https://easystats.github.io/correlation/articles/types.html)
--   [**Multilevel
-    Correlations**](https://easystats.github.io/correlation/articles/multilevel.html)
+-   [Types of
+    Correlation](https://easystats.github.io/correlation/articles/types.html)
+-   [Multilevel
+    Correlations](https://easystats.github.io/correlation/articles/multilevel.html)
 
-## Features
+# Features
 
 The *correlation* package can compute many different types of
 correlation, including:
 
--   [x] **Pearson’s correlation**
--   [x] **Spearman’s rank correlation**
--   [x] **Kendall’s rank correlation**
--   [x] **Biweight midcorrelation**
--   [x] **Distance correlation**
--   [x] **Percentage bend correlation**
--   [x] **Shepherd’s Pi correlation**
--   [x] **Blomqvist’s coefficient**
--   [x] **Hoeffding’s D**
--   [x] **Gamma correlation**
--   [x] **Gaussian rank correlation**
--   [x] **Point-Biserial and biserial correlation**
--   [x] **Winsorized correlation**
--   [x] **Polychoric correlation**
--   [x] **Tetrachoric correlation**
--   [x] **Multilevel correlation**
+✅ **Pearson’s correlation**<br> ✅ **Spearman’s rank correlation**<br> ✅
+**Kendall’s rank correlation**<br> ✅ **Biweight midcorrelation**<br> ✅
+**Distance correlation**<br> ✅ **Percentage bend correlation**<br> ✅
+**Shepherd’s Pi correlation**<br> ✅ **Blomqvist’s coefficient**<br> ✅
+**Hoeffding’s D**<br> ✅ **Gamma correlation**<br> ✅ **Gaussian rank
+correlation**<br> ✅ **Point-Biserial and biserial correlation**<br> ✅
+**Winsorized correlation**<br> ✅ **Polychoric correlation**<br> ✅
+**Tetrachoric correlation**<br> ✅ **Multilevel correlation**<br>
 
 An overview and description of these correlations types is [**available
 here**](https://easystats.github.io/correlation/articles/types.html).
@@ -137,7 +127,7 @@ Note that one can also obtain the full, **square** and redundant matrix
 using:
 
 ``` r
-summary(results, redundant=TRUE)
+summary(results, redundant = TRUE)
 ## # Correlation Matrix (pearson-method)
 ## 
 ## Parameter    | Sepal.Length | Sepal.Width | Petal.Length | Petal.Width
@@ -154,8 +144,8 @@ summary(results, redundant=TRUE)
 library(dplyr)
 library(see)
 
-results %>% 
-  summary(redundant=TRUE) %>% 
+results %>%
+  summary(redundant = TRUE) %>%
   plot()
 ```
 
@@ -167,9 +157,9 @@ The function also supports **stratified correlations**, all within the
 *tidyverse* workflow!
 
 ``` r
-iris %>% 
-  select(Species, Sepal.Length, Sepal.Width, Petal.Width) %>% 
-  group_by(Species) %>% 
+iris %>%
+  select(Species, Sepal.Length, Sepal.Width, Petal.Width) %>%
+  group_by(Species) %>%
   correlation()
 ## # Correlation Matrix (pearson-method)
 ## 
@@ -181,8 +171,8 @@ iris %>%
 ## versicolor | Sepal.Length | Sepal.Width | 0.53 | [ 0.29, 0.70] |  4.28 | < .001***
 ## versicolor | Sepal.Length | Petal.Width | 0.55 | [ 0.32, 0.72] |  4.52 | < .001***
 ## versicolor |  Sepal.Width | Petal.Width | 0.66 | [ 0.47, 0.80] |  6.15 | < .001***
-## virginica  | Sepal.Length | Sepal.Width | 0.46 | [ 0.20, 0.65] |  3.56 | < .01**  
-## virginica  | Sepal.Length | Petal.Width | 0.28 | [ 0.00, 0.52] |  2.03 | < .05*   
+## virginica  | Sepal.Length | Sepal.Width | 0.46 | [ 0.20, 0.65] |  3.56 | 0.002**  
+## virginica  | Sepal.Length | Petal.Width | 0.28 | [ 0.00, 0.52] |  2.03 | 0.048*   
 ## virginica  |  Sepal.Width | Petal.Width | 0.54 | [ 0.31, 0.71] |  4.42 | < .001***
 ## 
 ## p-value adjustment method: Holm (1979)
@@ -197,14 +187,14 @@ It is very easy to switch to a **Bayesian framework**.
 correlation(iris, bayesian = TRUE)
 ## # Correlation Matrix (pearson-method)
 ## 
-## Parameter1   |   Parameter2 |   rho |         95% CI |      pd | % in ROPE |        BF |         Prior
+## Parameter1   |   Parameter2 |   rho |         95% CI |      pd | % in ROPE |         Prior |        BF
 ## ------------------------------------------------------------------------------------------------------
-## Sepal.Length |  Sepal.Width | -0.11 | [-0.24,  0.01] |  91.70% |    43.38% |     0.509 | Beta (3 +- 3)
-## Sepal.Length | Petal.Length |  0.86 | [ 0.83,  0.90] | 100%*** |        0% | > 1000*** | Beta (3 +- 3)
-## Sepal.Length |  Petal.Width |  0.81 | [ 0.75,  0.84] | 100%*** |        0% | > 1000*** | Beta (3 +- 3)
-## Sepal.Width  | Petal.Length | -0.41 | [-0.53, -0.31] | 100%*** |     0.03% | > 1000*** | Beta (3 +- 3)
-## Sepal.Width  |  Petal.Width | -0.35 | [-0.48, -0.25] | 100%*** |     0.15% | > 1000*** | Beta (3 +- 3)
-## Petal.Length |  Petal.Width |  0.96 | [ 0.95,  0.97] | 100%*** |        0% | > 1000*** | Beta (3 +- 3)
+## Sepal.Length |  Sepal.Width | -0.11 | [-0.24,  0.02] |  91.03% |    43.55% | Beta (3 +- 3) |     0.509
+## Sepal.Length | Petal.Length |  0.86 | [ 0.83,  0.90] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Length |  Petal.Width |  0.81 | [ 0.76,  0.85] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Width  | Petal.Length | -0.41 | [-0.51, -0.30] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Width  |  Petal.Width | -0.35 | [-0.46, -0.24] | 100%*** |     0.10% | Beta (3 +- 3) | > 1000***
+## Petal.Length |  Petal.Width |  0.96 | [ 0.95,  0.97] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
 ## 
 ## Observations: 150
 ```
@@ -252,8 +242,8 @@ It also supports **partial correlations** (as well as Bayesian partial
 correlations).
 
 ``` r
-iris %>% 
-  correlation(partial = TRUE) %>% 
+iris %>%
+  correlation(partial = TRUE) %>%
   summary()
 ## # Correlation Matrix (pearson-method)
 ## 
@@ -280,8 +270,8 @@ al.,
 library(see) # for plotting
 library(ggraph) # needs to be loaded
 
-mtcars %>% 
-  correlation(partial = TRUE) %>% 
+mtcars %>%
+  correlation(partial = TRUE) %>%
   plot()
 ```
 
@@ -290,13 +280,14 @@ mtcars %>%
 ## Multilevel Correlations
 
 It also provide some cutting-edge methods, such as Multilevel (partial)
-correlations. These are are partial correlations based on **linear mixed
-models** that include the factors as random effects. They can be see as
-correlations *adjusted* for some group (*hierarchical*) variability.
+correlations. These are are partial correlations based on linear
+mixed-effects models that include the factors as **random effects**.
+They can be see as correlations *adjusted* for some group
+(*hierarchical*) variability.
 
 ``` r
-iris %>% 
-  correlation(partial = TRUE, multilevel = TRUE) %>% 
+iris %>%
+  correlation(partial = TRUE, multilevel = TRUE) %>%
   summary()
 ## # Correlation Matrix (pearson-method)
 ## 
@@ -314,8 +305,8 @@ convert the partial coefficient into regular ones.These can be
 **converted back** to full correlations:
 
 ``` r
-iris %>% 
-  correlation(partial = FALSE, multilevel = TRUE) %>% 
+iris %>%
+  correlation(partial = FALSE, multilevel = TRUE) %>%
   summary()
 ## Parameter    | Petal.Width | Petal.Length | Sepal.Width
 ## -------------------------------------------------------
@@ -323,3 +314,17 @@ iris %>%
 ## Sepal.Width  |     0.47*** |      0.38*** |            
 ## Petal.Length |     0.48*** |              |
 ```
+
+# Contributing and Support
+
+In case you want to file an issue or contribute in another way to the
+package, please follow [this
+guide](https://easystats.github.io/correlation/CONTRIBUTING.html). For
+questions about the functionality, you may either contact us via email
+or also file an issue.
+
+# Code of Conduct
+
+Please note that this project is released with a [Contributor Code of
+Conduct](https://easystats.github.io/correlation/CODE_OF_CONDUCT.html).
+By participating in this project you agree to abide by its terms.

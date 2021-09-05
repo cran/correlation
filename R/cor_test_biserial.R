@@ -1,7 +1,7 @@
 #' @keywords internal
 .cor_test_biserial <- function(data, x, y, ci = 0.95, method = "biserial", ...) {
 
-  # Sanity
+  # valid matrix
   if (.vartype(data[[x]])$is_binary & .vartype(data[[y]])$is_binary == FALSE) {
     binary <- x
     continuous <- y
@@ -43,7 +43,6 @@
 
 
 
-#' @importFrom stats dnorm qnorm
 #' @keywords internal
 .cor_test_biserial_biserial <- function(data, x, y, continuous, binary, ci) {
   var_x <- .complete_variable_x(data, continuous, binary)
@@ -56,7 +55,7 @@
   p <- 1 - q
   zp <- stats::dnorm(stats::qnorm(q))
 
-  r <- (((m1 - m0) * (p * q / zp)) / sd(var_x))
+  r <- (((m1 - m0) * (p * q / zp)) / stats::sd(var_x))
 
   p <- cor_to_p(r, n = length(var_x))
   ci_vals <- cor_to_ci(r, n = length(var_x), ci = ci)

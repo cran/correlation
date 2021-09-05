@@ -1,6 +1,33 @@
+# correlation 0.7.0
+
+## Breaking Changes
+
+- Removes `winsorize()` function, which now lives in `datawizard` package.
+
+## New Features
+
+- New `cor_smooth()` function for smoothing non-positive definite matrices.
+
+## Bug Fixes
+
+- When `data2` was specified `correlation()` was over-correcting for all of the
+  combinations of variables in the full x and y tables, rather than in just the
+  ones specified (#195).
+
+## Minor Changes
+
+- `correlation()` gains a new argument `rename` to rename variables.
+
+- `simualte_simpson()` function is now re-exported from `bayestestR` package.
+
+- `plot()` for `"easycor_test"` objects now produces an annotated scatter plot.
+
 # correlation 0.6.1
 
 ## Breaking Changes
+
+- `simualte_simpson()`: The groups are now named after the pattern `"G_"` (can
+  be altered with the `group_prefix` argument).
 
 - `robust` argument deprecated in favour of `ranktransform`.
 
@@ -8,8 +35,11 @@
 
 - `correlation` gains two new arguments: `select` and `select2` to select
   specific variables from dataframes to compare (#146).
-  
+
 - `as.matrix` method works for grouped correlations (#148).
+
+- New `as.list` method returns a list of various matrices related to correlation
+  analysis (correlation, number of observations, *p*-values, etc.).
 
 ## Bug Fixes
 

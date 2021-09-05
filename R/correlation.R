@@ -4,35 +4,40 @@
 #'
 #' @param data A data frame.
 #' @param data2 An optional data frame. If specified, all pair-wise correlations
-#'   between the variables in \code{data} and \code{data2} will be computed.
-#' @param select,select2 (Ignored if \code{data2} is specified.) Optional names
+#'   between the variables in `data` and `data2` will be computed.
+#' @param select,select2 (Ignored if `data2` is specified.) Optional names
 #'   of variables that should be selected for correlation. Instead of providing
-#'   the data frames with those variables that should be correlated, \code{data}
-#'   can be a data frame and \code{select} and \code{select2} are (quoted) names
-#'   of variables (columns) in \code{data}. \code{correlation()} will then
-#'   compute the correlation between \code{data[select]} and
-#'   \code{data[select2]}. If only \code{select} is specified, all pair-wise
-#'   correlations between the \code{select} variables will be computed. This is
-#'   a "pipe-friendly" alternative way of using \code{correlation()} (see
+#'   the data frames with those variables that should be correlated, `data`
+#'   can be a data frame and `select` and `select2` are (quoted) names
+#'   of variables (columns) in `data`. `correlation()` will then
+#'   compute the correlation between `data[select]` and
+#'   `data[select2]`. If only `select` is specified, all pair-wise
+#'   correlations between the `select` variables will be computed. This is
+#'   a "pipe-friendly" alternative way of using `correlation()` (see
 #'   'Examples').
+#' @param rename In case you wish to change the names of the variables in
+#'   the output, these arguments can be used to specify these alternative names.
+#'   Note that the number of names should be equal to the number of columns
+#'   selected. Ignored if `data2` is specified.
 #' @param p_adjust Correction method for frequentist correlations. Can be one of
-#'   \code{"holm"} (default), \code{"hochberg"}, \code{"hommel"},
-#'   \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"},
-#'   \code{"somers"} or \code{"none"}. See
-#'   \code{\link[stats:p.adjust]{p.adjust()}} for further details.
+#'   `"holm"` (default), `"hochberg"`, `"hommel"`,
+#'   `"bonferroni"`, `"BH"`, `"BY"`, `"fdr"`,
+#'   `"somers"` or `"none"`. See
+#'   [stats::p.adjust()] for further details.
 #' @param redundant Should the data include redundant rows (where each given
 #'   correlation is repeated two times).
 #' @param verbose Toggle warnings.
+#' @param standardize_names This option can be set to `TRUE` to run [insight::standardize_names()] on the output to get standardized column names. This option can also be set globally by running `options(easystats.standardize_names = TRUE)`.
 #' @inheritParams cor_test
 #'
 #' @details
 #' \subsection{Correlation Types}{
 #' \itemize{
-#' \item \strong{Pearson's correlation}: This is the most common correlation
+#' \item **Pearson's correlation**: This is the most common correlation
 #' method. It corresponds to the covariance of the two variables normalized
 #' (i.e., divided) by the product of their standard deviations.
 #'
-#' \item \strong{Spearman's rank correlation}: A non-parametric measure of rank
+#' \item **Spearman's rank correlation**: A non-parametric measure of rank
 #' correlation (statistical dependence between the rankings of two variables).
 #' The Spearman correlation between two variables is equal to the Pearson
 #' correlation between the rank values of those two variables; while Pearson's
@@ -41,92 +46,92 @@
 #' for Spearman's correlations are computed using the Fieller et al. (1957)
 #' correction (see Bishara and Hittner, 2017).
 #'
-#' \item \strong{Kendall's rank correlation}: In the normal case, the Kendall
+#' \item **Kendall's rank correlation**: In the normal case, the Kendall
 #' correlation is preferred than the Spearman correlation because of a smaller
 #' gross error sensitivity (GES) and a smaller asymptotic variance (AV), making
 #' it more robust and more efficient. However, the interpretation of Kendall's
 #' tau is less direct than that of Spearman's rho, in the sense that it
-#' quantifies the difference between the \% of concordant and discordant pairs
+#' quantifies the difference between the percentage of concordant and discordant pairs
 #' among all possible pairwise events. Confidence Intervals (CI) for Kendall's
 #' correlations are computed using the Fieller et al. (1957) correction (see
 #' Bishara and Hittner, 2017).
 #'
-#' \item \strong{Biweight midcorrelation}: A measure of similarity that is
+#' \item **Biweight midcorrelation**: A measure of similarity that is
 #' median-based, instead of the traditional mean-based, thus being less
 #' sensitive to outliers. It can be used as a robust alternative to other
 #' similarity metrics, such as Pearson correlation (Langfelder \& Horvath,
 #' 2012).
 #'
-#' \item \strong{Distance correlation}: Distance correlation measures both
+#' \item **Distance correlation**: Distance correlation measures both
 #' linear and non-linear association between two random variables or random
 #' vectors. This is in contrast to Pearson's correlation, which can only detect
 #' linear association between two random variables.
 #'
-#' \item \strong{Percentage bend correlation}: Introduced by Wilcox (1994), it
+#' \item **Percentage bend correlation**: Introduced by Wilcox (1994), it
 #' is based on a down-weight of a specified percentage of marginal observations
-#' deviating from the median (by default, 20\%).
+#' deviating from the median (by default, `20%`).
 #'
-#' \item \strong{Shepherd's Pi correlation}: Equivalent to a Spearman's rank
+#' \item **Shepherd's Pi correlation**: Equivalent to a Spearman's rank
 #' correlation after outliers removal (by means of bootstrapped Mahalanobis
 #' distance).
 #'
-#' \item \strong{Blomqvist’s coefficient}: The Blomqvist’s coefficient (also
+#' \item **Blomqvist’s coefficient**: The Blomqvist’s coefficient (also
 #' referred to as Blomqvist's Beta or medial correlation; Blomqvist, 1950) is a
 #' median-based non-parametric correlation that has some advantages over
 #' measures such as Spearman's or Kendall's estimates (see Shmid and Schimdt,
 #' 2006).
 #'
-#' \item \strong{Hoeffding’s D}: The Hoeffding’s D statistics is a
+#' \item **Hoeffding’s D**: The Hoeffding’s D statistics is a
 #' non-parametric rank based measure of association that detects more general
 #' departures from independence (Hoeffding 1948), including non-linear
 #' associations. Hoeffding’s D varies between -0.5 and 1 (if there are no tied
 #' ranks, otherwise it can have lower values), with larger values indicating a
 #' stronger relationship between the variables.
 #'
-#' \item \strong{Somers’ D}: The Somers’ D statistics is a non-parametric rank
+#' \item **Somers’ D**: The Somers’ D statistics is a non-parametric rank
 #' based measure of association between a binary variable and a continuous
 #' variable, for instance, in the context of logistic regression the binary
 #' outcome and the predicted probabilities for each outcome. Usually, Somers' D
 #' is a measure of ordinal association, however, this implementation it is
 #' limited to the case of a binary outcome.
 #'
-#' \item \strong{Point-Biserial and biserial correlation}: Correlation
+#' \item **Point-Biserial and biserial correlation**: Correlation
 #' coefficient used when one variable is continuous and the other is dichotomous
 #' (binary). Point-Biserial is equivalent to a Pearson's correlation, while
 #' Biserial should be used when the binary variable is assumed to have an
 #' underlying continuity. For example, anxiety level can be measured on a
 #' continuous scale, but can be classified dichotomously as high/low.
 #'
-#' \item \strong{Gamma correlation}: The Goodman-Kruskal gamma statistic is
+#' \item **Gamma correlation**: The Goodman-Kruskal gamma statistic is
 #' similar to Kendall's Tau coefficient. It is relatively robust to outliers and
 #' deals well with data that have many ties.
 #'
-#' \item \strong{Winsorized correlation}: Correlation of variables that have
+#' \item **Winsorized correlation**: Correlation of variables that have
 #' been formerly Winsorized, i.e., transformed by limiting extreme values to
 #' reduce the effect of possibly spurious outliers.
 #'
-#' \item \strong{Gaussian rank Correlation}: The Gaussian rank correlation
+#' \item **Gaussian rank Correlation**: The Gaussian rank correlation
 #' estimator is a simple and well-performing alternative for robust rank
 #' correlations (Boudt et al., 2012). It is based on the Gaussian quantiles of
 #' the ranks.
 #'
-#' \item \strong{Polychoric correlation}: Correlation between two theorized
+#' \item **Polychoric correlation**: Correlation between two theorized
 #' normally distributed continuous latent variables, from two observed ordinal
 #' variables.
 #'
-#' \item \strong{Tetrachoric correlation}: Special case of the polychoric
+#' \item **Tetrachoric correlation**: Special case of the polychoric
 #' correlation applicable when both observed variables are dichotomous.
 #' }}
 #'
 #' \subsection{Partial Correlation}{
-#' \strong{Partial correlations} are estimated as the correlation between two
+#' **Partial correlations** are estimated as the correlation between two
 #' variables after adjusting for the (linear) effect of one or more other
 #' variable. The correlation test is then run after having partialized the
 #' dataset, independently from it. In other words, it considers partialization
 #' as an independent step generating a different dataset, rather than belonging
 #' to the same model. This is why some discrepancies are to be expected for the
-#' t- and p-values, CIs, BFs etc (but \emph{not} the correlation coefficient)
-#' compared to other implementations (e.g., \code{ppcor}). (The size of these
+#' t- and p-values, CIs, BFs etc (but *not* the correlation coefficient)
+#' compared to other implementations (e.g., `ppcor`). (The size of these
 #' discrepancies depends on the number of covariates partialled-out and the
 #' strength of the linear association between all variables.) Such partial
 #' correlations can be represented as Gaussian Graphical Models (GGM), an
@@ -135,37 +140,37 @@
 #' relationships between them, which thickness represents the strength of
 #' association (see Bhushan et al., 2019).
 #' \cr\cr
-#' \strong{Multilevel correlations} are a special case of partial correlations
+#' **Multilevel correlations** are a special case of partial correlations
 #' where the variable to be adjusted for is a factor and is included as a random
 #' effect in a mixed model (note that the remaining continuous variables of the
 #' dataset will still be included as fixed effects, similarly to regular partial
 #' correlations). That said, there is an important difference between using
-#' \code{cor_test()} and \code{correlation()}: If you set \code{multilevel=TRUE}
-#' in \code{correlation()} but \code{partial} is set to \code{FALSE} (as per
+#' `cor_test()` and `correlation()`: If you set `multilevel=TRUE`
+#' in `correlation()` but `partial` is set to `FALSE` (as per
 #' default), then a back-transformation from partial to non-partial correlation
-#' will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor}}). However,
-#' this is not possible when using \code{cor_test()} so that if you set
-#' \code{multilevel=TRUE} in it, the resulting correlations are partial one.
-#' Note that for Bayesian multilevel correlations, if \code{partial = FALSE},
+#' will be attempted (through [`pcor_to_cor()`][pcor_to_cor]). However,
+#' this is not possible when using `cor_test()` so that if you set
+#' `multilevel=TRUE` in it, the resulting correlations are partial one.
+#' Note that for Bayesian multilevel correlations, if `partial = FALSE`,
 #' the back transformation will also recompute p-values based on the new r scores,
 #' and will drop the Bayes factors (as they are not relevant anymore). To keep
-#' Bayesian scores, don't forget to set \code{partial = TRUE}.
+#' Bayesian scores, don't forget to set `partial = TRUE`.
 #' }
 #'
 #' \subsection{Notes}{
 #' \itemize{
-#'   \item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
+#'   \item Kendall and Spearman correlations when `bayesian=TRUE`: These
 #'   are technically Pearson Bayesian correlations of rank transformed data,
 #'   rather than pure Bayesian rank correlations (which have different priors).
 #' }}
 #'
-#' @return A correlation object that can be displayed using the \code{print},
-#'   \code{summary} or \code{table} methods.
+#' @return A correlation object that can be displayed using the `print`,
+#'   `summary` or `table` methods.
 #'
 #' \subsection{Multiple tests correction}{
-#' The \code{p_adjust} argument can be used to adjust p-values for multiple
-#' comparisons. All adjustment methods available in \code{p.adjust} function
-#' \code{stats} package are supported.
+#' The `p_adjust` argument can be used to adjust p-values for multiple
+#' comparisons. All adjustment methods available in `p.adjust` function
+#' `stats` package are supported.
 #' }
 #'
 #' @examples
@@ -180,10 +185,8 @@
 #' if (require("dplyr")) {
 #'   iris %>%
 #'     correlation(select = "Petal.Width", select2 = "Sepal.Length")
-#' }
 #'
-#' # Grouped dataframe
-#' if (require("dplyr")) {
+#'   # Grouped dataframe
 #'   # grouped correlations
 #'   iris %>%
 #'     group_by(Species) %>%
@@ -198,10 +201,15 @@
 #'     )
 #' }
 #'
+#' # supplying custom variable names
+#' correlation(anscombe, select = c("x1", "x2"), rename = c("var1", "var2"))
+#'
 #' # automatic selection of correlation method
 #' correlation(mtcars[-2], method = "auto")
-#' @importFrom stats p.adjust
-#' @references \itemize{
+#'
+#' @references
+#'
+#' \itemize{
 #'   \item Boudt, K., Cornelissen, J., & Croux, C. (2012). The Gaussian rank
 #'   correlation estimator: robustness properties. Statistics and Computing,
 #'   22(2), 471-483.
@@ -233,6 +241,7 @@ correlation <- function(data,
                         data2 = NULL,
                         select = NULL,
                         select2 = NULL,
+                        rename = NULL,
                         method = "pearson",
                         p_adjust = "holm",
                         ci = 0.95,
@@ -249,6 +258,7 @@ correlation <- function(data,
                         robust = NULL,
                         winsorize = FALSE,
                         verbose = TRUE,
+                        standardize_names = getOption("easystats.standardize_names", FALSE),
                         ...) {
 
   # Deprecation warnings
@@ -257,7 +267,7 @@ correlation <- function(data,
     ranktransform <- robust
   }
 
-  # Sanity checks
+  # valid matrix checks
   if (partial == FALSE & multilevel) {
     partial <- TRUE
     convert_back_to_r <- TRUE
@@ -299,6 +309,15 @@ correlation <- function(data,
 
     attr(data, "groups") <- grp_df
     attr(data2, "groups") <- if (!is.null(select2)) grp_df
+  }
+
+  # renaming the columns if so desired
+  if (!is.null(rename)) {
+    if (length(data) != length(rename)) {
+      warning("Mismatch between number of variables and names.")
+    } else {
+      colnames(data) <- rename
+    }
   }
 
   if (inherits(data, "grouped_df")) {
@@ -374,6 +393,8 @@ correlation <- function(data,
   }
 
   if (convert_back_to_r) out <- pcor_to_cor(pcor = out) # Revert back to r if needed.
+
+  if (standardize_names) insight::standardize_names(out, ...)
   out
 }
 
@@ -510,7 +531,7 @@ correlation <- function(data,
     include_factors <- TRUE
   }
 
-  # Sanity checks ----------------
+  # valid matrix checks ----------------
 
   # What if only factors
   if (sum(sapply(if (is.null(data2)) data else cbind(data, data2), is.numeric)) == 0) {
@@ -591,6 +612,12 @@ correlation <- function(data,
     }
   }
 
+  # Remove superfluous correlations when two variable sets provided
+  if (!is.null(data2)) {
+    params <- params[!params$Parameter1 %in% names(data2), ]
+    params <- params[params$Parameter2 %in% names(data2), ]
+  }
+
   # P-values adjustments
   if ("p" %in% names(params)) {
     params$p <- stats::p.adjust(params$p, method = p_adjust)
@@ -599,11 +626,6 @@ correlation <- function(data,
   # Redundant
   if (redundant) {
     params <- .add_redundant(params, data)
-  }
-
-  if (!is.null(data2)) {
-    params <- params[!params$Parameter1 %in% names(data2), ]
-    params <- params[params$Parameter2 %in% names(data2), ]
   }
 
   list(params = params, data = data)
@@ -619,8 +641,7 @@ correlation <- function(data,
 
 #' @export
 plot.easycorrelation <- function(x, ...) {
-  if (!requireNamespace("see", quietly = TRUE)) {
-    stop("Package 'see' needed to plot correlation graphs. Please install it by running `install.packages('see')`.")
-  }
+  insight::check_if_installed("see", "to plot correlation graphs")
+
   NextMethod()
 }

@@ -9,6 +9,7 @@ correlation(
   data2 = NULL,
   select = NULL,
   select2 = NULL,
+  rename = NULL,
   method = "pearson",
   p_adjust = "holm",
   ci = 0.95,
@@ -25,6 +26,7 @@ correlation(
   robust = NULL,
   winsorize = FALSE,
   verbose = TRUE,
+  standardize_names = getOption("easystats.standardize_names", FALSE),
   ...
 )
 }
@@ -45,6 +47,11 @@ correlations between the \code{select} variables will be computed. This is
 a "pipe-friendly" alternative way of using \code{correlation()} (see
 'Examples').}
 
+\item{rename}{In case you wish to change the names of the variables in
+the output, these arguments can be used to specify these alternative names.
+Note that the number of names should be equal to the number of columns
+selected. Ignored if \code{data2} is specified.}
+
 \item{method}{A character string indicating which correlation coefficient is
 to be used for the test. One of \code{"pearson"} (default),
 \code{"kendall"}, \code{"spearman"} (but see also the \code{robust} argument), \code{"biserial"},
@@ -62,10 +69,10 @@ pearson otherwise).}
 \code{"holm"} (default), \code{"hochberg"}, \code{"hommel"},
 \code{"bonferroni"}, \code{"BH"}, \code{"BY"}, \code{"fdr"},
 \code{"somers"} or \code{"none"}. See
-\code{\link[stats:p.adjust]{p.adjust()}} for further details.}
+\code{\link[stats:p.adjust]{stats::p.adjust()}} for further details.}
 
 \item{ci}{Confidence/Credible Interval level. If \code{"default"}, then it is
-set to 0.95 (95\% CI).}
+set to \code{0.95} (\verb{95\%} CI).}
 
 \item{bayesian}{If TRUE, will run the correlations under a
 Bayesian framework. Note that for partial correlations, you will also need
@@ -81,10 +88,10 @@ recognized: \code{"medium.narrow"}, \code{"medium"}, \code{"wide"}, and
 \code{BayesFactor::correlationBF} function.}
 
 \item{bayesian_ci_method}{See arguments in
-\code{\link[=parameters]{model_parameters}} for \code{BayesFactor} tests.}
+\code{\link[=parameters]{model_parameters()}} for \code{BayesFactor} tests.}
 
 \item{bayesian_test}{See arguments in
-\code{\link[=parameters]{model_parameters}} for \code{BayesFactor} tests.}
+\code{\link[=parameters]{model_parameters()}} for \code{BayesFactor} tests.}
 
 \item{redundant}{Should the data include redundant rows (where each given
 correlation is repeated two times).}
@@ -127,12 +134,14 @@ threshold. See the \code{\link[=winsorize]{winsorize()}} function for more detai
 
 \item{verbose}{Toggle warnings.}
 
+\item{standardize_names}{This option can be set to \code{TRUE} to run \code{\link[insight:standardize_names]{insight::standardize_names()}} on the output to get standardized column names. This option can also be set globally by running \code{options(easystats.standardize_names = TRUE)}.}
+
 \item{...}{Additional arguments (e.g., \code{alternative}) to be passed to
 other methods. See \code{stats::cor.test} for further details.}
 }
 \value{
 A correlation object that can be displayed using the \code{print},
-  \code{summary} or \code{table} methods.
+\code{summary} or \code{table} methods.
 
 \subsection{Multiple tests correction}{
 The \code{p_adjust} argument can be used to adjust p-values for multiple
@@ -164,7 +173,7 @@ correlation is preferred than the Spearman correlation because of a smaller
 gross error sensitivity (GES) and a smaller asymptotic variance (AV), making
 it more robust and more efficient. However, the interpretation of Kendall's
 tau is less direct than that of Spearman's rho, in the sense that it
-quantifies the difference between the \% of concordant and discordant pairs
+quantifies the difference between the percentage of concordant and discordant pairs
 among all possible pairwise events. Confidence Intervals (CI) for Kendall's
 correlations are computed using the Fieller et al. (1957) correction (see
 Bishara and Hittner, 2017).
@@ -182,7 +191,7 @@ linear association between two random variables.
 
 \item \strong{Percentage bend correlation}: Introduced by Wilcox (1994), it
 is based on a down-weight of a specified percentage of marginal observations
-deviating from the median (by default, 20\%).
+deviating from the median (by default, \verb{20\%}).
 
 \item \strong{Shepherd's Pi correlation}: Equivalent to a Spearman's rank
 correlation after outliers removal (by means of bootstrapped Mahalanobis
@@ -261,7 +270,7 @@ correlations). That said, there is an important difference between using
 \code{cor_test()} and \code{correlation()}: If you set \code{multilevel=TRUE}
 in \code{correlation()} but \code{partial} is set to \code{FALSE} (as per
 default), then a back-transformation from partial to non-partial correlation
-will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor}}). However,
+will be attempted (through \code{\link[=pcor_to_cor]{pcor_to_cor()}}). However,
 this is not possible when using \code{cor_test()} so that if you set
 \code{multilevel=TRUE} in it, the resulting correlations are partial one.
 Note that for Bayesian multilevel correlations, if \code{partial = FALSE},
@@ -272,9 +281,9 @@ Bayesian scores, don't forget to set \code{partial = TRUE}.
 
 \subsection{Notes}{
 \itemize{
-  \item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
-  are technically Pearson Bayesian correlations of rank transformed data,
-  rather than pure Bayesian rank correlations (which have different priors).
+\item Kendall and Spearman correlations when \code{bayesian=TRUE}: These
+are technically Pearson Bayesian correlations of rank transformed data,
+rather than pure Bayesian rank correlations (which have different priors).
 }}
 }
 \examples{
@@ -289,10 +298,8 @@ summary(results, redundant = TRUE)
 if (require("dplyr")) {
   iris \%>\%
     correlation(select = "Petal.Width", select2 = "Sepal.Length")
-}
 
-# Grouped dataframe
-if (require("dplyr")) {
+  # Grouped dataframe
   # grouped correlations
   iris \%>\%
     group_by(Species) \%>\%
@@ -307,35 +314,39 @@ if (require("dplyr")) {
     )
 }
 
+# supplying custom variable names
+correlation(anscombe, select = c("x1", "x2"), rename = c("var1", "var2"))
+
 # automatic selection of correlation method
 correlation(mtcars[-2], method = "auto")
+
 }
 \references{
 \itemize{
-  \item Boudt, K., Cornelissen, J., & Croux, C. (2012). The Gaussian rank
-  correlation estimator: robustness properties. Statistics and Computing,
-  22(2), 471-483.
+\item Boudt, K., Cornelissen, J., & Croux, C. (2012). The Gaussian rank
+correlation estimator: robustness properties. Statistics and Computing,
+22(2), 471-483.
 
-  \item Bhushan, N., Mohnert, F., Sloot, D., Jans, L., Albers, C., & Steg, L.
-  (2019). Using a Gaussian graphical model to explore relationships between
-  items and variables in environmental psychology research. Frontiers in
-  psychology, 10, 1050.
+\item Bhushan, N., Mohnert, F., Sloot, D., Jans, L., Albers, C., & Steg, L.
+(2019). Using a Gaussian graphical model to explore relationships between
+items and variables in environmental psychology research. Frontiers in
+psychology, 10, 1050.
 
-  \item Bishara, A. J., & Hittner, J. B. (2017). Confidence intervals for
-  correlations when data are not normal. Behavior research methods, 49(1),
-  294-309.
+\item Bishara, A. J., & Hittner, J. B. (2017). Confidence intervals for
+correlations when data are not normal. Behavior research methods, 49(1),
+294-309.
 
-  \item Fieller, E. C., Hartley, H. O., & Pearson, E. S. (1957). Tests for
-  rank correlation coefficients. I. Biometrika, 44(3/4), 470-481.
+\item Fieller, E. C., Hartley, H. O., & Pearson, E. S. (1957). Tests for
+rank correlation coefficients. I. Biometrika, 44(3/4), 470-481.
 
-  \item Langfelder, P., & Horvath, S. (2012). Fast R functions for robust
-  correlations and hierarchical clustering. Journal of statistical software,
-  46(11).
+\item Langfelder, P., & Horvath, S. (2012). Fast R functions for robust
+correlations and hierarchical clustering. Journal of statistical software,
+46(11).
 
-  \item Blomqvist, N. (1950). On a measure of dependence between two random
-  variables,Annals of Mathematical Statistics,21, 593–600
+\item Blomqvist, N. (1950). On a measure of dependence between two random
+variables,Annals of Mathematical Statistics,21, 593–600
 
-  \item Somers, R. H. (1962). A new asymmetric measure of association for
-  ordinal variables. American Sociological Review. 27 (6).
+\item Somers, R. H. (1962). A new asymmetric measure of association for
+ordinal variables. American Sociological Review. 27 (6).
 }
 }

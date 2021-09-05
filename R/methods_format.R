@@ -8,6 +8,11 @@ format.easycorrelation <- function(x,
                                    stars = NULL,
                                    format = NULL,
                                    ...) {
+  if (nrow(x) == 0) {
+    warning("The table is empty, no rows left to print.")
+    return(as.data.frame(x))
+  }
+
   attri <- attributes(x)
 
   out <- insight::format_table(x,
@@ -38,6 +43,12 @@ format.easycormatrix <- function(x,
                                  include_significance = NULL,
                                  format = NULL,
                                  ...) {
+
+  # If it's a real matrix
+  if(!"Parameter" %in% colnames(x)) {
+    m <- as.data.frame(x)
+    return(cbind(data.frame("Variables" = row.names(x)), m))
+  }
 
   # Find attributes
   attri <- attributes(x)
@@ -75,13 +86,15 @@ format.easycormatrix <- function(x,
         stars_only = stars_only
       )
     } else if (type == "pd") {
-      sig[, nums] <- sapply(sig[, nums],
+      sig[, nums] <- sapply(
+        sig[, nums],
         insight::format_pd,
         stars = stars,
         stars_only = stars_only
       )
     } else if (type == "BF") {
-      sig[, nums] <- sapply(sig[, nums],
+      sig[, nums] <- sapply(
+        sig[, nums],
         insight::format_bf,
         stars = stars,
         stars_only = stars_only
@@ -107,14 +120,12 @@ format.easycormatrix <- function(x,
 
 # Footers and Captions ----------------------------------------------------
 
-
-
 #' @keywords internal
 .format_easycorrelation_footer <- function(x, format = NULL) {
   footer <- ""
 
   # P-adjust
-  if (isFALSE(attributes(x)$bayesian)) {
+  if (isFALSE(attributes(x)$bayesian) && ! isTRUE(attributes(x)$smoothed)) {
     footer <- paste0(
       "\np-value adjustment method: ",
       parameters::format_p_adjust(attributes(x)$p_adjust)
@@ -144,14 +155,20 @@ format.easycormatrix <- function(x,
 #' @keywords internal
 .format_easycorrelation_caption <- function(x, format = NULL) {
   if (!is.null(attributes(x)$method)) {
-    if (is.null(format) || format == "text") {
-      caption <- c(paste0("# Correlation Matrix (", unique(attributes(x)$method), "-method)"), "blue")
+    if (isTRUE(attributes(x)$smoothed)) {
+      prefix <- "Smoothed Correlation Matrix ("
     } else {
-      caption <- paste0("Correlation Matrix (", unique(attributes(x)$method), "-method)")
+      prefix <- "Correlation Matrix ("
+    }
+    if (is.null(format) || format == "text") {
+      caption <- c(paste0("# ", prefix, unique(attributes(x)$method), "-method)"), "blue")
+    } else {
+      caption <- paste0(prefix, unique(attributes(x)$method), "-method)")
     }
   } else {
     caption <- NULL
   }
+
   caption
 }
 
@@ -161,6 +178,7 @@ format.easycormatrix <- function(x,
 #' @keywords internal
 .retrieve_arg_from_attr <- function(attri, arg, default) {
   arg_name <- deparse(substitute(arg))
+
   if (is.null(arg)) {
     if (arg_name %in% names(attri)) {
       arg <- attri[[arg_name]]
@@ -170,5 +188,6 @@ format.easycormatrix <- function(x,
       arg <- default # That's the real default
     }
   }
+
   arg
 }
