@@ -36,7 +36,6 @@ display.easycormatrix <- function(object,
                                   stars = TRUE,
                                   include_significance = NULL,
                                   ...) {
-
   if (format == "markdown") {
     print_md(
       x = object,
@@ -84,10 +83,3 @@ display.easycorrelation <- function(object,
     )
   }
 }
-
-
-# Reexports models ------------------------
-
-#' @importFrom insight display
-#' @export
-insight::display

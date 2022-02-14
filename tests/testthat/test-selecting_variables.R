@@ -1,7 +1,8 @@
 # select specific variables for correlation -----------------------------
 
-if (require("dplyr")) {
+if (require("poorman")) {
   test_that("selecting specific variables works", {
+    skip_if(getRversion() < "3.6")
     set.seed(123)
     df1 <-
       mtcars %>%

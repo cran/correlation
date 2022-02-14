@@ -23,51 +23,58 @@ test_that("cor_test bayesian", {
 })
 
 test_that("cor_test tetrachoric", {
-  if (require("psych", quietly = TRUE)) {
-    data <- ggplot2::msleep
-    data$brainwt_binary <- ifelse(data$brainwt > 3, 1, 0)
-    data$sleep_rem_binary <- ifelse(data$sleep_rem > 1.2, 1, 0)
+  skip_if_not_installed("psych")
+  skip_if_not_installed("polycor")
+  skip_if_not_installed("ggplot2")
 
-    # With Factors / Binary
-    expect_error(cor_test(data, "brainwt_binary", "sleep_rem_binary", method = "tetrachoric"))
+  data <- ggplot2::msleep
+  data$brainwt_binary <- ifelse(data$brainwt > 3, 1, 0)
+  data$sleep_rem_binary <- ifelse(data$sleep_rem > 1.2, 1, 0)
 
-    data$sleep_rem_ordinal <- as.factor(round(data$sleep_rem))
-    data$brainwt_ordinal <- as.factor(round(data$brainwt))
+  # With Factors / Binary
+  expect_error(cor_test(data, "brainwt_binary", "sleep_rem_binary", method = "tetrachoric"))
 
-    out <- cor_test(data, "brainwt", "brainwt_ordinal", method = "polychoric")
-    expect_equal(out$rho, 0.9999, tolerance = 0.01)
+  data$sleep_rem_ordinal <- as.factor(round(data$sleep_rem))
+  data$brainwt_ordinal <- as.factor(round(data$brainwt))
 
-    # Biserial
-    expect_error(cor_test(data, "brainwt", "sleep_rem_binary", method = "pointbiserial"))
+  out <- cor_test(data, "brainwt", "brainwt_ordinal", method = "polychoric")
+  expect_equal(out$rho, 0.9999, tolerance = 0.01)
 
-    expect_error(cor_test(data, "brainwt", "sleep_rem_binary", method = "biserial"))
-  }
+  # Biserial
+  expect_error(cor_test(data, "brainwt", "sleep_rem_binary", method = "pointbiserial"))
+
+  expect_error(cor_test(data, "brainwt", "sleep_rem_binary", method = "biserial"))
 })
 
 
 test_that("cor_test robust", {
-  out1 <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "pearson", robust = TRUE)
-  out2 <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "spearman", robust = FALSE)
+  skip_if_not_installed("ggplot2")
+
+  out1 <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "pearson", ranktransform = TRUE)
+  out2 <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "spearman", ranktransform = FALSE)
   expect_equal(out1$r, out2$rho, tolerance = 0.01)
 })
 
 
 test_that("cor_test distance", {
-  if (require("energy", quietly = TRUE)) {
-    out <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "distance")
-    df <- dplyr::filter(ggplot2::msleep, !is.na(brainwt), !is.na(sleep_rem))
-    comparison <- energy::dcorT.test(df$brainwt, df$sleep_rem)
-    expect_equal(out$r, as.numeric(comparison$estimate), tolerance = 0.01)
-  }
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("energy")
+  skip_if_not_installed("poorman")
+
+  out <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "distance")
+  df <- poorman::filter(ggplot2::msleep, !is.na(brainwt), !is.na(sleep_rem))
+  comparison <- energy::dcorT.test(df$brainwt, df$sleep_rem)
+  expect_equal(out$r, as.numeric(comparison$estimate), tolerance = 0.01)
 })
 
 
 test_that("cor_test percentage", {
-  if (require("WRS2", quietly = TRUE)) {
-    out <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "percentage")
-    comparison <- WRS2::pbcor(ggplot2::msleep$brainwt, ggplot2::msleep$sleep_rem)
-    expect_equal(out$r, as.numeric(comparison$cor), tolerance = 0.01)
-  }
+  skip_if_not_installed("ggplot2")
+  skip_if_not_installed("WRS2")
+
+  out <- cor_test(ggplot2::msleep, "brainwt", "sleep_rem", method = "percentage")
+  comparison <- WRS2::pbcor(ggplot2::msleep$brainwt, ggplot2::msleep$sleep_rem)
+  expect_equal(out$r, as.numeric(comparison$cor), tolerance = 0.01)
 })
 
 

@@ -4,6 +4,7 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.02306/status.svg)](https://doi.org/10.21105/joss.02306)
 [![downloads](http://cranlogs.r-pkg.org/badges/correlation)](https://cran.r-project.org/package=correlation)
 [![total](https://cranlogs.r-pkg.org/badges/grand-total/correlation)](https://cranlogs.r-pkg.org/)
+[![status](https://tinyverse.netlify.com/badge/correlation)](https://CRAN.R-project.org/package=correlation)
 
 `correlation` is an
 [**easystats**](https://github.com/easystats/easystats) package focused
@@ -29,7 +30,7 @@ Source Software*, *5*(51), 2306. <https://doi.org/10.21105/joss.02306>
 [![CRAN](http://www.r-pkg.org/badges/version/correlation)](https://cran.r-project.org/package=correlation)
 [![Build
 Status](https://travis-ci.org/easystats/correlation.svg?branch=master)](https://travis-ci.org/easystats/correlation)
-[![codecov](https://codecov.io/gh/easystats/correlation/branch/master/graph/badge.svg)](https://codecov.io/gh/easystats/correlation)
+[![codecov](https://codecov.io/gh/easystats/correlation/branch/master/graph/badge.svg)](https://app.codecov.io/gh/easystats/correlation)
 
 Run the following to install the stable release from CRAN:
 
@@ -65,14 +66,22 @@ these vignettes:
 The *correlation* package can compute many different types of
 correlation, including:
 
-✅ **Pearson’s correlation**<br> ✅ **Spearman’s rank correlation**<br> ✅
-**Kendall’s rank correlation**<br> ✅ **Biweight midcorrelation**<br> ✅
-**Distance correlation**<br> ✅ **Percentage bend correlation**<br> ✅
-**Shepherd’s Pi correlation**<br> ✅ **Blomqvist’s coefficient**<br> ✅
-**Hoeffding’s D**<br> ✅ **Gamma correlation**<br> ✅ **Gaussian rank
-correlation**<br> ✅ **Point-Biserial and biserial correlation**<br> ✅
-**Winsorized correlation**<br> ✅ **Polychoric correlation**<br> ✅
-**Tetrachoric correlation**<br> ✅ **Multilevel correlation**<br>
+✅ **Pearson’s correlation**<br> 
+✅ **Spearman’s rank correlation**<br>
+✅ **Kendall’s rank correlation**<br> 
+✅ **Biweight midcorrelation**<br> 
+✅ **Distance correlation**<br> 
+✅ **Percentage bend correlation**<br> 
+✅ **Shepherd’s Pi correlation**<br> 
+✅ **Blomqvist’s coefficient**<br> 
+✅ **Hoeffding’s D**<br> 
+✅ **Gamma correlation**<br> 
+✅ **Gaussian rank correlation**<br> 
+✅ **Point-Biserial and biserial correlation**<br> 
+✅ **Winsorized correlation**<br> 
+✅ **Polychoric correlation**<br> 
+✅ **Tetrachoric correlation**<br> 
+✅ **Multilevel correlation**<br>
 
 An overview and description of these correlations types is [**available
 here**](https://easystats.github.io/correlation/articles/types.html).
@@ -141,7 +150,6 @@ summary(results, redundant = TRUE)
 ```
 
 ``` r
-library(dplyr)
 library(see)
 
 results %>%
@@ -151,10 +159,21 @@ results %>%
 
 ![](man/figures/README-7-1.png)<!-- -->
 
+## Correlation tests
+
+The `cor_test()` function, for pairwise correlations, is also very
+convenient for making quick scatter plots.
+
+``` r
+plot(cor_test(iris, "Sepal.Width", "Sepal.Length"))
+```
+
+![](man/figures/README-corr-1.png)<!-- -->
+
 ## Grouped dataframes
 
-The function also supports **stratified correlations**, all within the
-*tidyverse* workflow!
+The `correlation()` function also supports **stratified correlations**,
+all within the *tidyverse* workflow!
 
 ``` r
 iris %>%
@@ -189,11 +208,11 @@ correlation(iris, bayesian = TRUE)
 ## 
 ## Parameter1   |   Parameter2 |   rho |         95% CI |      pd | % in ROPE |         Prior |        BF
 ## ------------------------------------------------------------------------------------------------------
-## Sepal.Length |  Sepal.Width | -0.11 | [-0.24,  0.02] |  91.03% |    43.55% | Beta (3 +- 3) |     0.509
-## Sepal.Length | Petal.Length |  0.86 | [ 0.83,  0.90] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
-## Sepal.Length |  Petal.Width |  0.81 | [ 0.76,  0.85] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
-## Sepal.Width  | Petal.Length | -0.41 | [-0.51, -0.30] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
-## Sepal.Width  |  Petal.Width | -0.35 | [-0.46, -0.24] | 100%*** |     0.10% | Beta (3 +- 3) | > 1000***
+## Sepal.Length |  Sepal.Width | -0.11 | [-0.26,  0.04] |  92.35% |    42.90% | Beta (3 +- 3) |     0.509
+## Sepal.Length | Petal.Length |  0.86 | [ 0.82,  0.90] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Length |  Petal.Width |  0.81 | [ 0.75,  0.86] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Width  | Petal.Length | -0.41 | [-0.55, -0.29] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
+## Sepal.Width  |  Petal.Width | -0.35 | [-0.48, -0.21] | 100%*** |     0.07% | Beta (3 +- 3) | > 1000***
 ## Petal.Length |  Petal.Width |  0.96 | [ 0.95,  0.97] | 100%*** |        0% | Beta (3 +- 3) | > 1000***
 ## 
 ## Observations: 150

@@ -15,9 +15,14 @@ set.seed(333)
 
 if (!requireNamespace("see", quietly = TRUE) ||
   !requireNamespace("tidyr", quietly = TRUE) ||
-  !requireNamespace("dplyr", quietly = TRUE) ||
+  !requireNamespace("poorman", quietly = TRUE) ||
   !requireNamespace("ggplot2", quietly = TRUE)) {
   knitr::opts_chunk$set(eval = FALSE)
+} else {
+  library(see)
+  library(tidyr)
+  library(poorman)
+  library(ggplot2)
 }
 
 ## ----cite---------------------------------------------------------------------
@@ -29,7 +34,7 @@ library(bayestestR)
 library(see)
 library(ggplot2)
 library(tidyr)
-library(dplyr)
+library(poorman)
 
 ## -----------------------------------------------------------------------------
 generate_results <- function(r, n = 100, transformation = "none") {
@@ -81,7 +86,7 @@ data %>%
   tidyr::pivot_longer(-c(n, r, transformation),
                       names_to = "Type",
                       values_to = "Estimation") %>% 
-  dplyr::mutate(Type = forcats::fct_relevel(Type, "Pearson", "Spearman", "Kendall", "Biweight", "Distance")) %>%
+  mutate(Type = forcats::fct_relevel(Type, "Pearson", "Spearman", "Kendall", "Biweight", "Distance")) %>%
   ggplot(aes(x = r, y = Estimation, fill = Type)) +
   geom_smooth(aes(color = Type), method = "loess", alpha = 0) +
   geom_vline(aes(xintercept = 0.5), linetype = "dashed") +
@@ -100,5 +105,5 @@ model <- data %>%
   lm(r ~ Type / Estimation, data = .) %>%
   parameters::parameters()
 
-dplyr::arrange(model[6:10, ], desc(Coefficient))
+arrange(model[6:10, ], desc(Coefficient))
 

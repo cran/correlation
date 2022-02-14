@@ -17,7 +17,7 @@
 #'   `"auto"` will attempt at selecting the most relevant method
 #'   (polychoric when ordinal factors involved, tetrachoric when dichotomous
 #'   factors involved, point-biserial if one dichotomous and one continuous and
-#'   pearson otherwise). See below the **details** section for a desription of
+#'   pearson otherwise). See below the **details** section for a description of
 #'   these indices.
 #' @param bayesian,partial_bayesian If TRUE, will run the correlations under a
 #'   Bayesian framework. Note that for partial correlations, you will also need
@@ -46,9 +46,6 @@
 #'   redundant. Nonetheless, it is an easy option to increase the robustness of the
 #'   correlation as well as flexible way to obtain Bayesian or multilevel
 #'   Spearman-like rank correlations.
-#' @param robust Old name for `ranktransform`. Will be removed in subsequent
-#'   versions, so better to use `ranktransform` which is more explicit about
-#'   what it does.
 #' @param winsorize Another way of making the correlation more "robust" (i.e.,
 #'   limiting the impact of extreme values). Can be either `FALSE` or a
 #'   number between 0 and 1 (e.g., `0.2`) that corresponds to the desired
@@ -65,7 +62,6 @@
 #'
 #' cor_test(iris, "Sepal.Length", "Sepal.Width")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "spearman")
-#'
 #' \dontrun{
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "kendall")
 #' cor_test(iris, "Sepal.Length", "Sepal.Width", method = "biweight")
@@ -130,16 +126,9 @@ cor_test <- function(data,
                      partial_bayesian = FALSE,
                      multilevel = FALSE,
                      ranktransform = FALSE,
-                     robust = NULL,
                      winsorize = FALSE,
                      verbose = TRUE,
                      ...) {
-
-  # Deprecation warnings
-  if (!is.null(robust)) {
-    warning("The 'robust' argument is deprecated in favour of 'ranktransform' (more explicit). Please use the latter instead to remove this warning.")
-    ranktransform <- robust
-  }
 
   # valid matrix checks
   if (!x %in% names(data) | !y %in% names(data)) {
@@ -151,7 +140,7 @@ cor_test <- function(data,
 
   # Make sure factor is no factor
   if (!method %in% c("tetra", "tetrachoric", "poly", "polychoric")) {
-    data[c(x, y)] <- datawizard::data_to_numeric(data[c(x, y)], dummy_factors = FALSE)
+    data[c(x, y)] <- datawizard::convert_data_to_numeric(data[c(x, y)], dummy_factors = FALSE)
   }
 
   # Partial

@@ -45,7 +45,7 @@ format.easycormatrix <- function(x,
                                  ...) {
 
   # If it's a real matrix
-  if(!"Parameter" %in% colnames(x)) {
+  if (!"Parameter" %in% colnames(x)) {
     m <- as.data.frame(x)
     return(cbind(data.frame("Variables" = row.names(x)), m))
   }
@@ -85,14 +85,18 @@ format.easycormatrix <- function(x,
         digits = p_digits,
         stars_only = stars_only
       )
-    } else if (type == "pd") {
+    }
+
+    if (type == "pd") {
       sig[, nums] <- sapply(
         sig[, nums],
         insight::format_pd,
         stars = stars,
         stars_only = stars_only
       )
-    } else if (type == "BF") {
+    }
+
+    if (type == "BF") {
       sig[, nums] <- sapply(
         sig[, nums],
         insight::format_bf,
@@ -125,7 +129,7 @@ format.easycormatrix <- function(x,
   footer <- ""
 
   # P-adjust
-  if (isFALSE(attributes(x)$bayesian) && ! isTRUE(attributes(x)$smoothed)) {
+  if (isFALSE(attributes(x)$bayesian) && !isTRUE(attributes(x)$smoothed)) {
     footer <- paste0(
       "\np-value adjustment method: ",
       parameters::format_p_adjust(attributes(x)$p_adjust)

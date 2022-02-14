@@ -28,7 +28,7 @@ correlation) or \code{"shepherd"} (for Shepherd's Pi correlation). Setting
 \code{"auto"} will attempt at selecting the most relevant method
 (polychoric when ordinal factors involved, tetrachoric when dichotomous
 factors involved, point-biserial if one dichotomous and one continuous and
-pearson otherwise). See below the \strong{details} section for a desription of
+pearson otherwise). See below the \strong{details} section for a description of
 these indices.}
 
 \item{correction}{Only used if method is 'spearman' or 'kendall'. Can be
@@ -41,10 +41,11 @@ correction. Both are generally very similar.}
 other methods. See \code{stats::cor.test} for further details.}
 }
 \value{
-A list containing a p-value and the statistic or the CI bounds.
+A list containing a \emph{p}-value and the statistic or the CI bounds.
 }
 \description{
-Get statistics, p-values and confidence intervals (CI) from correlation coefficients.
+Get statistics, \emph{p}-values and confidence intervals (CI) from correlation
+coefficients.
 }
 \examples{
 cor.test(iris$Sepal.Length, iris$Sepal.Width)
