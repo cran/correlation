@@ -17,7 +17,9 @@
 #' predictor, because it is scaled to (i.e., relative to) the total variability
 #' in the response variable.
 #'
-#' @param cor,pcor A correlation matrix, or a partial or a semipartial
+#' @param cor A correlation matrix, or a partial or a semipartial
+#'   correlation matrix.
+#' @param pcor A correlation matrix, or a partial or a semipartial
 #'   correlation matrix.
 #' @param cov A covariance matrix (or a vector of the SD of the variables).
 #'   Required for semi-partial correlations.
@@ -34,7 +36,6 @@
 #'
 #' # Inverse
 #' round(pcor_to_cor(cor_to_pcor(cor)) - cor, 2) # Should be 0
-#' @importFrom stats cov2cor
 #' @export
 
 cor_to_pcor <- function(cor, tol = .Machine$double.eps^(2 / 3)) {

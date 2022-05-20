@@ -1,7 +1,7 @@
 Type: Package
 Package: correlation
 Title: Methods for Correlation Analysis
-Version: 0.8.0
+Version: 0.8.1
 Authors@R: 
     c(person(given = "Dominique",
              family = "Makowski",
@@ -47,8 +47,8 @@ License: GPL-3
 URL: https://easystats.github.io/correlation/
 BugReports: https://github.com/easystats/correlation/issues
 Depends: R (>= 3.4)
-Imports: bayestestR (>= 0.11.5), datasets, datawizard (>= 0.2.2),
-        insight (>= 0.15.0), parameters (>= 0.16.0), stats
+Imports: bayestestR (>= 0.12.1), datasets, datawizard (>= 0.4.1),
+        insight (>= 0.17.1), parameters (>= 0.17.0), stats
 Suggests: BayesFactor, poorman, energy, forcats, ggcorrplot, ggplot2,
         ggraph, gt, Hmisc, knitr, lme4, mbend, polycor, ppcor, psych,
         rmarkdown, rmcorr, rstanarm, see, spelling, testthat (>=
@@ -56,10 +56,10 @@ Suggests: BayesFactor, poorman, energy, forcats, ggcorrplot, ggplot2,
 VignetteBuilder: knitr
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2022-02-14 21:15:46 UTC; brenton
+Packaged: 2022-05-20 20:04:02 UTC; indrajeetpatil
 Author: Dominique Makowski [aut, inv] (<https://orcid.org/0000-0001-5375-9967>,
     @Dom_Makowski),
   Brenton M. Wiernik [aut, cre] (<https://orcid.org/0000-0001-9560-6336>,
@@ -73,4 +73,4 @@ Author: Dominique Makowski [aut, inv] (<https://orcid.org/0000-0001-5375-9967>,
   Mark White [rev],
   Maximilian M. Rabe [rev] (<https://orcid.org/0000-0002-2556-5644>)
 Repository: CRAN
-Date/Publication: 2022-02-14 21:50:02 UTC
+Date/Publication: 2022-05-20 21:50:02 UTC

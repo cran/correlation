@@ -1,6 +1,7 @@
 #' Correlation test
 #'
 #' This function performs a correlation test between two variables.
+#' You can easily visualize the result using [`plot()`][visualisation_recipe.easycormatrix()] (see examples [**here**](https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples)).
 #'
 #' @param data A data frame.
 #' @param x,y Names of two variables present in the data.
@@ -19,12 +20,13 @@
 #'   factors involved, point-biserial if one dichotomous and one continuous and
 #'   pearson otherwise). See below the **details** section for a description of
 #'   these indices.
-#' @param bayesian,partial_bayesian If TRUE, will run the correlations under a
-#'   Bayesian framework. Note that for partial correlations, you will also need
-#'   to set `partial_bayesian` to `TRUE` to obtain "full" Bayesian
-#'   partial correlations. Otherwise, you will obtain pseudo-Bayesian partial
-#'   correlations (i.e., Bayesian correlation based on frequentist
-#'   partialization).
+#' @param bayesian If `TRUE`, will run the correlations under a Bayesian
+#'   framework.
+#' @param partial_bayesian If partial correlations under a Bayesian framework
+#'   are needed, you will also need to set `partial_bayesian` to `TRUE` to
+#'   obtain "full" Bayesian partial correlations. Otherwise, you will obtain
+#'   pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on
+#'   frequentist partialization).
 #' @param include_factors If `TRUE`, the factors are kept and eventually
 #'   converted to numeric or used as random effects (depending of
 #'   `multilevel`). If `FALSE`, factors are removed upfront.
@@ -140,7 +142,7 @@ cor_test <- function(data,
 
   # Make sure factor is no factor
   if (!method %in% c("tetra", "tetrachoric", "poly", "polychoric")) {
-    data[c(x, y)] <- datawizard::convert_data_to_numeric(data[c(x, y)], dummy_factors = FALSE)
+    data[c(x, y)] <- datawizard::data_to_numeric(data[c(x, y)], dummy_factors = FALSE)
   }
 
   # Partial

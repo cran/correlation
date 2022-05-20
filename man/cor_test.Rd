@@ -46,12 +46,8 @@ these indices.}
 \item{ci}{Confidence/Credible Interval level. If \code{"default"}, then it is
 set to \code{0.95} (\verb{95\%} CI).}
 
-\item{bayesian, partial_bayesian}{If TRUE, will run the correlations under a
-Bayesian framework. Note that for partial correlations, you will also need
-to set \code{partial_bayesian} to \code{TRUE} to obtain "full" Bayesian
-partial correlations. Otherwise, you will obtain pseudo-Bayesian partial
-correlations (i.e., Bayesian correlation based on frequentist
-partialization).}
+\item{bayesian}{If \code{TRUE}, will run the correlations under a Bayesian
+framework.}
 
 \item{bayesian_prior}{For the prior argument, several named values are
 recognized: \code{"medium.narrow"}, \code{"medium"}, \code{"wide"}, and
@@ -68,6 +64,12 @@ converted to numeric or used as random effects (depending of
 
 \item{partial}{Can be \code{TRUE} or \code{"semi"} for partial and
 semi-partial correlations, respectively.}
+
+\item{partial_bayesian}{If partial correlations under a Bayesian framework
+are needed, you will also need to set \code{partial_bayesian} to \code{TRUE} to
+obtain "full" Bayesian partial correlations. Otherwise, you will obtain
+pseudo-Bayesian partial correlations (i.e., Bayesian correlation based on
+frequentist partialization).}
 
 \item{multilevel}{If \code{TRUE}, the factors are included as random factors.
 Else, if \code{FALSE} (default), they are included as fixed effects in the
@@ -94,6 +96,7 @@ other methods. See \code{stats::cor.test} for further details.}
 }
 \description{
 This function performs a correlation test between two variables.
+You can easily visualize the result using \code{\link[=visualisation_recipe.easycormatrix]{plot()}} (see examples \href{https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples}{\strong{here}}).
 }
 \details{
 \subsection{Correlation Types}{
