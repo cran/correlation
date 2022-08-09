@@ -14,13 +14,13 @@ set.seed(333)
 
 
 if (!requireNamespace("see", quietly = TRUE) ||
-  !requireNamespace("tidyr", quietly = TRUE) ||
+  !requireNamespace("datawizard", quietly = TRUE) ||
   !requireNamespace("poorman", quietly = TRUE) ||
   !requireNamespace("ggplot2", quietly = TRUE)) {
   knitr::opts_chunk$set(eval = FALSE)
 } else {
   library(see)
-  library(tidyr)
+  library(datawizard)
   library(poorman)
   library(ggplot2)
 }
@@ -33,19 +33,19 @@ library(correlation)
 library(bayestestR)
 library(see)
 library(ggplot2)
-library(tidyr)
+library(datawizard)
 library(poorman)
 
 ## -----------------------------------------------------------------------------
 generate_results <- function(r, n = 100, transformation = "none") {
   data <- bayestestR::simulate_correlation(round(n), r = r)
-  
+
   if (transformation != "none") {
     var <- ifelse(grepl("(", transformation, fixed = TRUE), "data$V2)", "data$V2")
     transformation <- paste0(transformation, var)
     data$V2 <- eval(parse(text = transformation))
   }
-  
+
   out <- data.frame(n = n, transformation = transformation, r = r)
 
   out$Pearson <- cor_test(data, "V1", "V2", method = "pearson")$r
@@ -54,7 +54,7 @@ generate_results <- function(r, n = 100, transformation = "none") {
   out$Biweight <- cor_test(data, "V1", "V2", method = "biweight")$r
   out$Distance <- cor_test(data, "V1", "V2", method = "distance")$r
   out$Distance <- cor_test(data, "V1", "V2", method = "distance")$r
-  
+
   out
 }
 
@@ -81,12 +81,13 @@ for (r in seq(0, 0.999, length.out = 200)) {
   }
 }
 
-
 data %>%
-  tidyr::pivot_longer(-c(n, r, transformation),
-                      names_to = "Type",
-                      values_to = "Estimation") %>% 
-  mutate(Type = forcats::fct_relevel(Type, "Pearson", "Spearman", "Kendall", "Biweight", "Distance")) %>%
+  datawizard::reshape_longer(
+    select = -c("n", "r", "transformation"),
+    names_to = "Type",
+    values_to = "Estimation"
+  ) %>%
+  mutate(Type = relevel(as.factor(Type), "Pearson", "Spearman", "Kendall", "Biweight", "Distance")) %>%
   ggplot(aes(x = r, y = Estimation, fill = Type)) +
   geom_smooth(aes(color = Type), method = "loess", alpha = 0) +
   geom_vline(aes(xintercept = 0.5), linetype = "dashed") +
@@ -99,9 +100,11 @@ data %>%
   facet_wrap(~transformation)
 
 model <- data %>%
-  tidyr::pivot_longer(-c(n, r, transformation),
-                      names_to = "Type",
-                      values_to = "Estimation") %>% 
+  datawizard::reshape_longer(
+    select = -c("n", "r", "transformation"),
+    names_to = "Type",
+    values_to = "Estimation"
+  ) %>%
   lm(r ~ Type / Estimation, data = .) %>%
   parameters::parameters()
 
