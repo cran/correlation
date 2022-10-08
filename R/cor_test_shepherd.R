@@ -3,8 +3,8 @@
   var_x <- .complete_variable_x(data, x, y)
   var_y <- .complete_variable_y(data, x, y)
 
-  d <- distance_mahalanobis(cbind(var_x, var_y))
-  not_outliers <- d$Distance < 6
+  d <- .robust_bootstrap_mahalanobis(cbind(var_x, var_y))
+  not_outliers <- d < 6
 
   if (bayesian) {
     data <- data[not_outliers, ]
@@ -15,4 +15,21 @@
   }
   out$Method <- "Shepherd's Pi"
   out
+}
+
+
+# Utils -------------------------------------------------------------------
+
+#' @keywords internal
+.robust_bootstrap_mahalanobis <- function(data, iterations = 1000) {
+  Ms <- replicate(n = iterations, {
+    # Draw random numbers from 1:n with replacement
+    idx <- sample(nrow(data), replace = TRUE)
+    # Resample data
+    dat <- data[idx, ]
+    # Calculating the Mahalanobis distance for each actual observation using resampled data
+    stats::mahalanobis(data, center = colMeans(dat), cov = stats::cov(dat))
+  })
+
+  apply(Ms, 1, stats::median)
 }

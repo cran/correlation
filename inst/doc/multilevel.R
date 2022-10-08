@@ -13,6 +13,7 @@ options(
 )
 
 if (!requireNamespace("ggplot2", quietly = TRUE) ||
+  !requireNamespace("BayesFactor", quietly = TRUE) ||
   !requireNamespace("lme4", quietly = TRUE)) {
   knitr::opts_chunk$set(eval = FALSE)
 }

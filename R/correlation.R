@@ -148,16 +148,18 @@
 #' the variable to be adjusted for is a factor and is included as a random
 #' effect in a mixed model (note that the remaining continuous variables of the
 #' dataset will still be included as fixed effects, similarly to regular partial
-#' correlations). That said, there is an important difference between using
-#' `cor_test()` and `correlation()`: If you set `multilevel=TRUE` in
-#' `correlation()` but `partial` is set to `FALSE` (as per default), then a
-#' back-transformation from partial to non-partial correlation will be attempted
-#' (through [`pcor_to_cor()`][pcor_to_cor]). However, this is not possible when
-#' using `cor_test()` so that if you set `multilevel=TRUE` in it, the resulting
-#' correlations are partial one. Note that for Bayesian multilevel correlations,
-#' if `partial = FALSE`, the back transformation will also recompute *p*-values
-#' based on the new *r* scores, and will drop the Bayes factors (as they are not
-#' relevant anymore). To keep Bayesian scores, set `partial = TRUE`.
+#' correlations). The model is a random intercept model, i.e. the multilevel
+#' correlation is adjusted for `(1 | groupfactor)`.That said, there is an
+#' important difference between using `cor_test()` and `correlation()`: If you
+#' set `multilevel=TRUE` in `correlation()` but `partial` is set to `FALSE` (as
+#' per default), then a back-transformation from partial to non-partial
+#' correlation will be attempted (through [`pcor_to_cor()`][pcor_to_cor]).
+#' However, this is not possible when using `cor_test()` so that if you set
+#' `multilevel=TRUE` in it, the resulting correlations are partial one. Note
+#' that for Bayesian multilevel correlations, if `partial = FALSE`, the back
+#' transformation will also recompute *p*-values based on the new *r* scores,
+#' and will drop the Bayes factors (as they are not relevant anymore). To keep
+#' Bayesian scores, set `partial = TRUE`.
 #' }
 #'
 #' \subsection{Notes}{
@@ -264,7 +266,7 @@ correlation <- function(data,
                         standardize_names = getOption("easystats.standardize_names", FALSE),
                         ...) {
   # valid matrix checks
-  if (partial == FALSE & multilevel) {
+  if (partial == FALSE && multilevel) {
     partial <- TRUE
     convert_back_to_r <- TRUE
   } else {
@@ -286,7 +288,7 @@ correlation <- function(data,
     all_selected <- c(select, select2)
     not_in_data <- !all_selected %in% colnames(data)
     if (any(not_in_data)) {
-      stop(paste0("Following variables are not in the data: ", all_selected[not_in_data], collapse = ", "))
+      stop(paste0("Following variables are not in the data: ", all_selected[not_in_data], collapse = ", "), call. = FALSE)
     }
 
     # for grouped df, add group variables to both data frames
@@ -310,7 +312,7 @@ correlation <- function(data,
   # renaming the columns if so desired
   if (!is.null(rename)) {
     if (length(data) != length(rename)) {
-      warning("Mismatch between number of variables and names.")
+      warning("Mismatch between number of variables and names.", call. = FALSE)
     } else {
       colnames(data) <- rename
     }
@@ -456,7 +458,7 @@ correlation <- function(data,
           modelframe <- rbind(modelframe, modelframe_current)
         }
       } else {
-        stop("'data2' should have the same grouping characteristics as data.")
+        stop("'data2' should have the same grouping characteristics as data.", call. = FALSE)
       }
     }
     # else
@@ -520,9 +522,9 @@ correlation <- function(data,
     data <- cbind(data, data2)
   }
 
-  if (ncol(data) <= 2 & any(sapply(data, is.factor)) & include_factors == FALSE) {
+  if (ncol(data) <= 2 && any(sapply(data, is.factor)) && include_factors == FALSE) {
     if (isTRUE(verbose)) {
-      warning("It seems like there is not enough continuous variables in your data. Maybe you want to include the factors? We're setting `include_factors=TRUE` for you.", call. = FALSE)
+      warning(insight::format_message("It seems like there is not enough continuous variables in your data. Maybe you want to include the factors? We're setting `include_factors=TRUE` for you."), call. = FALSE)
     }
     include_factors <- TRUE
   }
@@ -550,7 +552,7 @@ correlation <- function(data,
 
   # LOOP ----------------
 
-  for (i in 1:nrow(combinations)) {
+  for (i in seq_len(nrow(combinations))) {
     x <- as.character(combinations[i, "Parameter1"])
     y <- as.character(combinations[i, "Parameter2"])
 
@@ -582,13 +584,13 @@ correlation <- function(data,
       params <- result
     } else {
       if (!all(names(result) %in% names(params))) {
-        if ("r" %in% names(params) & !"r" %in% names(result)) {
+        if ("r" %in% names(params) && !"r" %in% names(result)) {
           names(result)[names(result) %in% c("rho", "tau")] <- "r"
         }
-        if ("r" %in% names(result) & !"r" %in% names(params)) {
+        if ("r" %in% names(result) && !"r" %in% names(params)) {
           names(params)[names(params) %in% c("rho", "tau")] <- "r"
         }
-        if (!"r" %in% names(params) & any(c("rho", "tau") %in% names(result))) {
+        if (!"r" %in% names(params) && any(c("rho", "tau") %in% names(result))) {
           names(params)[names(params) %in% c("rho", "tau")] <- "r"
           names(result)[names(result) %in% c("rho", "tau")] <- "r"
         }

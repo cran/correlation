@@ -132,9 +132,11 @@ is_positive_definite <- is.positive_definite
 is.positive_definite.matrix <- function(x, tol = 10^-12, ...) {
   eigens <- try(eigen(x), silent = TRUE)
 
-  # Sanity checks
+  # validation checks
   if (inherits(eigens, as.character("try-error"))) {
-    stop("There is something seriously wrong with the correlation matrix, as some of the eigen values are NA.")
+    stop(insight::format_message(
+      "There is something seriously wrong with the correlation matrix, as some of the eigen values are NA."
+    ), call. = FALSE)
   }
 
   # Find out

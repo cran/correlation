@@ -69,6 +69,21 @@ visualisation_recipe.easycormatrix <- function(x,
   show_text <- !isFALSE(ellipses$show_values)
   show_p <- !isFALSE(ellipses$show_p)
 
+  # default style for tiles
+  if (is.null(tile)) {
+    tile <- list(color = "white", size = 0.6)
+  } else {
+    if (is.null(tile$color)) {
+      tile$color <- "white"
+    }
+    if (is.null(tile$size)) {
+      tile$size <- 0.6
+    }
+  }
+
+  # remember if full matrix
+  is_redundant <- attributes(x)$redundant
+
   # Format as summary() if true matrix
   if (inherits(x, "matrix")) {
     data_text <- NULL
@@ -112,6 +127,12 @@ visualisation_recipe.easycormatrix <- function(x,
   # filter `NA`s
   data <- data[!is.na(data$r), ]
 
+  # if redundant, remove diagonal self-correlation, and fill with NA again
+  if (isTRUE(is_redundant)) {
+    self_cor <- which(data$Parameter1 == data$Parameter2)
+    data$r[self_cor] <- NA
+    data$Text[self_cor] <- ""
+  }
 
   # Initialize layers list
   layers <- list()
@@ -122,9 +143,24 @@ visualisation_recipe.easycormatrix <- function(x,
   # Add tiles
   if (!is.null(show_data)) {
     if (isTRUE(show_data) || show_data %in% c("tile", "tiles")) {
-      layers[[paste0("l", l)]] <- .visualisation_easycormatrix_data(type = "tile", data, x = "Parameter2", y = "Parameter1", fill = "r", args = tile, dot_args = ellipses)
+      layers[[paste0("l", l)]] <- .visualisation_easycormatrix_data(
+        type = "tile",
+        data, x = "Parameter2",
+        y = "Parameter1",
+        fill = "r",
+        args = tile,
+        dot_args = ellipses
+      )
     } else {
-      layers[[paste0("l", l)]] <- .visualisation_easycormatrix_data(type = "point", data, x = "Parameter2", y = "Parameter1", fill = "r", args = point, dot_args = ellipses)
+      layers[[paste0("l", l)]] <- .visualisation_easycormatrix_data(
+        type = "point",
+        data,
+        x = "Parameter2",
+        y = "Parameter1",
+        fill = "r",
+        args = point,
+        dot_args = ellipses
+      )
     }
     l <- l + 1
   }
@@ -133,16 +169,32 @@ visualisation_recipe.easycormatrix <- function(x,
 
   # Add text
   if (!is.null(show_text) && show_text != FALSE) {
-    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_text(data, x = "Parameter2", y = "Parameter1", label = "Text", text = text)
+    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_text(
+      data,
+      x = "Parameter2",
+      y = "Parameter1",
+      label = "Text",
+      text = text
+    )
     l <- l + 1
   }
 
   # Color tiles
   if (!is.null(show_data) && show_data %in% c("tile", "tiles")) {
-    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_scale_fill(type = "fill", data, scale_fill = scale_fill, show_legend = show_legend)
+    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_scale_fill(
+      type = "fill",
+      data,
+      scale_fill = scale_fill,
+      show_legend = show_legend
+    )
     l <- l + 1
   } else if (show_data %in% c("point", "points")) {
-    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_scale_fill(type = "colour", data, scale_fill = scale_fill, show_legend = show_legend)
+    layers[[paste0("l", l)]] <- .visualisation_easycormatrix_scale_fill(
+      type = "colour",
+      data,
+      scale_fill = scale_fill,
+      show_legend = show_legend
+    )
     l <- l + 1
   }
 
@@ -205,8 +257,8 @@ visualisation_recipe.easycormatrix <- function(x,
 # Layer - Scale Fill -------------------------------------------------------------
 
 .visualisation_easycormatrix_scale_fill <- function(type = "fill", data, scale_fill = NULL, show_legend = TRUE) {
-  low_lim <- ifelse(min(data$r) < 0, -1, 0)
-  high_lim <- ifelse(max(data$r) > 0, 1, 0)
+  low_lim <- ifelse(min(data$r, na.rm = TRUE) < 0, -1, 0)
+  high_lim <- ifelse(max(data$r, na.rm = TRUE) > 0, 1, 0)
 
   out <- list(
     geom = paste0("scale_", type, "_gradient2"),
@@ -214,6 +266,7 @@ visualisation_recipe.easycormatrix <- function(x,
     mid = "white",
     high = "#F44336",
     midpoint = 0,
+    na.value = "grey85",
     limit = c(low_lim, high_lim),
     space = "Lab",
     name = "Correlation",

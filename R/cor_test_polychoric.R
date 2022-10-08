@@ -6,12 +6,12 @@
   var_y <- .complete_variable_y(data, x, y)
 
   # valid matrix check
-  if (!is.factor(var_x) & !is.factor(var_y)) {
-    stop("Polychoric correlations can only be ran on ordinal factors.")
+  if (!is.factor(var_x) && !is.factor(var_y)) {
+    stop("Polychoric correlations can only be ran on ordinal factors.", call. = FALSE)
   }
 
 
-  if (!is.factor(var_x) | !is.factor(var_y)) {
+  if (!is.factor(var_x) || !is.factor(var_y)) {
     insight::check_if_installed("polycor", "for 'polyserial' correlations")
 
     r <- polycor::polyserial(
@@ -23,7 +23,7 @@
     # Reconstruct dataframe
     dat <- data.frame(as.numeric(var_x), as.numeric(var_y))
     names(dat) <- c(x, y)
-    junk <- utils::capture.output(r <- psych::polychoric(dat)$rho[2, 1])
+    junk <- utils::capture.output(r <- psych::polychoric(dat)$rho[2, 1]) # nolint
     method <- "Polychoric"
   }
 

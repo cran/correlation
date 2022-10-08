@@ -6,15 +6,15 @@
   var_y <- .complete_variable_y(data, x, y)
 
   # valid matrix check
-  if (length(unique(var_x)) > 2 & length(unique(var_y)) > 2) {
-    stop("Tetrachoric correlations can only be ran on dichotomous data.")
+  if (length(unique(var_x)) > 2 && length(unique(var_y)) > 2) {
+    stop("Tetrachoric correlations can only be ran on dichotomous data.", call. = FALSE)
   }
 
   # Reconstruct dataframe
   dat <- data.frame(var_x, var_y)
   names(dat) <- c(x, y)
 
-  junk <- utils::capture.output(r <- psych::tetrachoric(dat)$rho[2, 1])
+  junk <- utils::capture.output(r <- psych::tetrachoric(dat)$rho[2, 1]) # nolint
 
   p <- cor_to_p(r, n = nrow(data))
   ci_vals <- cor_to_ci(r, n = nrow(data), ci = ci)

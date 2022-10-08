@@ -79,13 +79,12 @@
 #' @keywords internal
 .cor_test_distance_raw <- function(x, y, index = 1) {
   if (index < 0 || index > 2) {
-    stop("`index` must be between 0 and 2.")
+    stop("`index` must be between 0 and 2.", call. = FALSE)
     index <- 1.0
   }
 
   x <- as.matrix(stats::dist(x))
   y <- as.matrix(stats::dist(y))
-  n <- nrow(x)
 
   A <- .A_kl(x, index)
   B <- .A_kl(y, index)
@@ -130,7 +129,7 @@
   ## denoted A* (or B*) in JMVA t-test paper (2013)
   d <- as.matrix(d)
   n <- nrow(d)
-  if (n != ncol(d)) stop("Argument d should be distance")
+  if (n != ncol(d)) stop("Argument d should be distance", call. = FALSE)
   m <- rowMeans(d)
   M <- mean(d)
   a <- sweep(d, 1, m)

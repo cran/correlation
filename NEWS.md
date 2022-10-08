@@ -1,3 +1,22 @@
+# correlation 0.8.3
+
+## Breaking Changes
+
+- `distance_mahalanobis()` is deprecated. Use `performance::check_outliers(method = "mahalanobis_robust")` instead.
+
+- The minimum needed R version has been bumped to `3.6`.
+
+## Minor Changes
+
+- Fixes breakages caused by updates to *parameters* package (#269).
+
+- The visualization recipe (plots) for redundant correlation matrices was
+  improved, so self-correlations will no longer be labelled and get a neutral
+  color.
+
+- The `print()` method redundant correlation matrices no longer shows the
+  diagonal with self-correlations.
+
 # correlation 0.8.2
 
 - Maintenance release for *datawizard* package update.
