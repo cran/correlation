@@ -1,21 +1,24 @@
-if (require("poorman", quietly = TRUE) && require("ggplot2", quietly = TRUE)) {
-  test_that("as.list", {
-    # no groups
-    set.seed(123)
-    expect_snapshot(as.list(correlation(mtcars)))
+test_that("as.list", {
+  skip_if_not_or_load_if_installed("datawizard")
+  skip_if_not_or_load_if_installed("ggplot2")
 
-    # with groups
-    set.seed(123)
-    expect_snapshot(suppressWarnings(as.list(msleep %>%
-      group_by(vore) %>%
-      correlation(method = "spearman"))))
+  # no groups
+  set.seed(123)
+  expect_snapshot(as.list(correlation(mtcars)))
 
-    expect_snapshot(suppressWarnings(as.list(mtcars %>%
-      group_by(am) %>%
-      correlation(
-        select = c("cyl", "wt"),
-        select2 = c("hp"),
-        method = "percentage"
-      ))))
-  })
-}
+  # with groups
+  set.seed(123)
+  data(msleep, package = "ggplot2")
+  expect_snapshot(as.list(
+    correlation(datawizard::data_group(msleep, "vore"), method = "spearman")
+  ))
+
+  expect_snapshot(as.list(
+    correlation(
+      datawizard::data_group(mtcars, "am"),
+      select = c("cyl", "wt"),
+      select2 = "hp",
+      method = "percentage"
+    )
+  ))
+})

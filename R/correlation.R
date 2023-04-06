@@ -1,7 +1,8 @@
 #' Correlation Analysis
 #'
 #' Performs a correlation analysis.
-#' You can easily visualize the result using [`plot()`][visualisation_recipe.easycormatrix()] (see examples [**here**](https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples)).
+#' You can easily visualize the result using [`plot()`][visualisation_recipe.easycormatrix()]
+#' (see examples [**here**](https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples)).
 #'
 #' @param data A data frame.
 #' @param data2 An optional data frame. If specified, all pair-wise correlations
@@ -179,9 +180,11 @@
 #' `stats` package are supported.
 #' }
 #'
-#' @examples
+#' @examplesIf requireNamespace("poorman", quietly = TRUE) && requireNamespace("psych", quietly = TRUE)
 #'
 #' library(correlation)
+#' library(poorman)
+#'
 #' results <- correlation(iris)
 #'
 #' results
@@ -189,24 +192,22 @@
 #' summary(results, redundant = TRUE)
 #'
 #' # pipe-friendly usage with  grouped dataframes from {dplyr} package
-#' if (require("poorman")) {
-#'   iris %>%
-#'     correlation(select = "Petal.Width", select2 = "Sepal.Length")
+#' iris %>%
+#'   correlation(select = "Petal.Width", select2 = "Sepal.Length")
 #'
-#'   # Grouped dataframe
-#'   # grouped correlations
-#'   iris %>%
-#'     group_by(Species) %>%
-#'     correlation()
+#' # Grouped dataframe
+#' # grouped correlations
+#' iris %>%
+#'   group_by(Species) %>%
+#'   correlation()
 #'
-#'   # selecting specific variables for correlation
-#'   mtcars %>%
-#'     group_by(am) %>%
-#'     correlation(
-#'       select = c("cyl", "wt"),
-#'       select2 = c("hp")
-#'     )
-#' }
+#' # selecting specific variables for correlation
+#' mtcars %>%
+#'   group_by(am) %>%
+#'   correlation(
+#'     select = c("cyl", "wt"),
+#'     select2 = c("hp")
+#'   )
 #'
 #' # supplying custom variable names
 #' correlation(anscombe, select = c("x1", "x2"), rename = c("var1", "var2"))
@@ -266,7 +267,7 @@ correlation <- function(data,
                         standardize_names = getOption("easystats.standardize_names", FALSE),
                         ...) {
   # valid matrix checks
-  if (partial == FALSE && multilevel) {
+  if (!partial && multilevel) {
     partial <- TRUE
     convert_back_to_r <- TRUE
   } else {
@@ -274,7 +275,7 @@ correlation <- function(data,
   }
 
   # p-adjustment
-  if (bayesian == TRUE) {
+  if (bayesian) {
     p_adjust <- "none"
   }
 
@@ -288,7 +289,9 @@ correlation <- function(data,
     all_selected <- c(select, select2)
     not_in_data <- !all_selected %in% colnames(data)
     if (any(not_in_data)) {
-      stop(paste0("Following variables are not in the data: ", all_selected[not_in_data], collapse = ", "), call. = FALSE)
+      insight::format_error(
+        paste0("Following variables are not in the data: ", all_selected[not_in_data], collapse = ", ")
+      )
     }
 
     # for grouped df, add group variables to both data frames
@@ -312,7 +315,7 @@ correlation <- function(data,
   # renaming the columns if so desired
   if (!is.null(rename)) {
     if (length(data) != length(rename)) {
-      warning("Mismatch between number of variables and names.", call. = FALSE)
+      insight::format_warning("Mismatch between number of variables and names.")
     } else {
       colnames(data) <- rename
     }
@@ -522,9 +525,9 @@ correlation <- function(data,
     data <- cbind(data, data2)
   }
 
-  if (ncol(data) <= 2 && any(sapply(data, is.factor)) && include_factors == FALSE) {
+  if (ncol(data) <= 2L && any(sapply(data, is.factor)) && !include_factors) {
     if (isTRUE(verbose)) {
-      warning(insight::format_message("It seems like there is not enough continuous variables in your data. Maybe you want to include the factors? We're setting `include_factors=TRUE` for you."), call. = FALSE)
+      insight::format_warning("It seems like there is not enough continuous variables in your data. Maybe you want to include the factors? We're setting `include_factors=TRUE` for you.")
     }
     include_factors <- TRUE
   }

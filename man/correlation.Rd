@@ -142,7 +142,8 @@ comparisons. All adjustment methods available in \code{p.adjust} function
 }
 \description{
 Performs a correlation analysis.
-You can easily visualize the result using \code{\link[=visualisation_recipe.easycormatrix]{plot()}} (see examples \href{https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples}{\strong{here}}).
+You can easily visualize the result using \code{\link[=visualisation_recipe.easycormatrix]{plot()}}
+(see examples \href{https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples}{\strong{here}}).
 }
 \details{
 \subsection{Correlation Types}{
@@ -265,8 +266,11 @@ Bayesian rank correlations (which have different priors).
 }
 }
 \examples{
+\dontshow{if (requireNamespace("poorman", quietly = TRUE) && requireNamespace("psych", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 library(correlation)
+library(poorman)
+
 results <- correlation(iris)
 
 results
@@ -274,31 +278,29 @@ summary(results)
 summary(results, redundant = TRUE)
 
 # pipe-friendly usage with  grouped dataframes from {dplyr} package
-if (require("poorman")) {
-  iris \%>\%
-    correlation(select = "Petal.Width", select2 = "Sepal.Length")
+iris \%>\%
+  correlation(select = "Petal.Width", select2 = "Sepal.Length")
 
-  # Grouped dataframe
-  # grouped correlations
-  iris \%>\%
-    group_by(Species) \%>\%
-    correlation()
+# Grouped dataframe
+# grouped correlations
+iris \%>\%
+  group_by(Species) \%>\%
+  correlation()
 
-  # selecting specific variables for correlation
-  mtcars \%>\%
-    group_by(am) \%>\%
-    correlation(
-      select = c("cyl", "wt"),
-      select2 = c("hp")
-    )
-}
+# selecting specific variables for correlation
+mtcars \%>\%
+  group_by(am) \%>\%
+  correlation(
+    select = c("cyl", "wt"),
+    select2 = c("hp")
+  )
 
 # supplying custom variable names
 correlation(anscombe, select = c("x1", "x2"), rename = c("var1", "var2"))
 
 # automatic selection of correlation method
 correlation(mtcars[-2], method = "auto")
-
+\dontshow{\}) # examplesIf}
 }
 \references{
 \itemize{

@@ -3,7 +3,7 @@
   var_x <- .complete_variable_x(data, x, y)
   var_y <- .complete_variable_y(data, x, y)
 
-  if (corrected == FALSE) {
+  if (!corrected) {
     rez <- .cor_test_distance_raw(var_x, var_y, index = 1)
     rez <- data.frame(
       Parameter1 = x,
@@ -14,7 +14,8 @@
       t = NA,
       df_error = NA,
       p = NA,
-      Method = "Distance"
+      Method = "Distance",
+      stringsAsFactors = FALSE
     )
   } else {
     rez <- .cor_test_distance_corrected(var_x, var_y, ci = ci)
@@ -27,7 +28,8 @@
       t = rez$t,
       df_error = rez$df,
       p = rez$p,
-      Method = "Distance (Bias Corrected)"
+      Method = "Distance (Bias Corrected)",
+      stringsAsFactors = FALSE
     )
   }
 
@@ -79,7 +81,7 @@
 #' @keywords internal
 .cor_test_distance_raw <- function(x, y, index = 1) {
   if (index < 0 || index > 2) {
-    stop("`index` must be between 0 and 2.", call. = FALSE)
+    insight::format_error("`index` must be between 0 and 2.")
     index <- 1.0
   }
 

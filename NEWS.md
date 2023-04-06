@@ -1,3 +1,10 @@
+# correlation 0.8.4
+
+- Minor improvements and code revisions due to changes in other packages.
+
+- Default color scheme for correlation matrices switched to use red for negative
+  values and blue for positive values.
+
 # correlation 0.8.3
 
 ## Breaking Changes

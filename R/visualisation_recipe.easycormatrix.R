@@ -3,7 +3,8 @@
 #' Objects from the `correlation` package can be easily visualized. You can
 #' simply run `plot()` on them, which will internally call the `visualisation_recipe()`
 #' method to produce a basic `ggplot`. You can customize this plot ad-hoc or via
-#' the arguments described below. See examples [**here**](https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples).
+#' the arguments described below.
+#' See examples [**here**](https://easystats.github.io/correlation/reference/visualisation_recipe.easycormatrix.html#ref-examples).
 #'
 #' @param x A correlation object.
 #' @param show_text Show labels with matrix values.
@@ -127,6 +128,9 @@ visualisation_recipe.easycormatrix <- function(x,
   # filter `NA`s
   data <- data[!is.na(data$r), ]
 
+  # add absolute r-value, required as aes for point size
+  data$abs_r <- abs(data$r)
+
   # if redundant, remove diagonal self-correlation, and fill with NA again
   if (isTRUE(is_redundant)) {
     self_cor <- which(data$Parameter1 == data$Parameter2)
@@ -159,7 +163,8 @@ visualisation_recipe.easycormatrix <- function(x,
         y = "Parameter1",
         fill = "r",
         args = point,
-        dot_args = ellipses
+        dot_args = ellipses,
+        abs_fill = "abs_r"
       )
     }
     l <- l + 1
@@ -168,7 +173,7 @@ visualisation_recipe.easycormatrix <- function(x,
 
 
   # Add text
-  if (!is.null(show_text) && show_text != FALSE) {
+  if (!is.null(show_text) && !isFALSE(show_text)) {
     layers[[paste0("l", l)]] <- .visualisation_easycormatrix_text(
       data,
       x = "Parameter2",
@@ -222,7 +227,14 @@ visualisation_recipe.easycormatrix <- function(x,
 
 # Layer - Data -------------------------------------------------------------
 
-.visualisation_easycormatrix_data <- function(type = "tile", data, x, y, fill, args = NULL, dot_args = NULL) {
+.visualisation_easycormatrix_data <- function(type = "tile",
+                                              data,
+                                              x,
+                                              y,
+                                              fill,
+                                              args = NULL,
+                                              dot_args = NULL,
+                                              abs_fill = NULL) {
   out <- list(
     geom = type,
     data = data,
@@ -239,6 +251,9 @@ visualisation_recipe.easycormatrix <- function(x,
       out$size <- dot_args$point_size
     } else if (!is.null(dot_args$size_point)) {
       out$size <- dot_args$size_point
+    } else if (!is.null(abs_fill)) {
+      # hack needed for size-aes for point-geoms
+      out$aes$size <- abs_fill
     } else {
       out$aes$size <- paste0("abs(", fill, ")")
     }
@@ -262,9 +277,9 @@ visualisation_recipe.easycormatrix <- function(x,
 
   out <- list(
     geom = paste0("scale_", type, "_gradient2"),
-    low = "#2196F3",
+    low = "#F44336",
     mid = "white",
-    high = "#F44336",
+    high = "#2196F3",
     midpoint = 0,
     na.value = "grey85",
     limit = c(low_lim, high_lim),

@@ -1,23 +1,27 @@
 #' @keywords internal
 .cor_test_biserial <- function(data, x, y, ci = 0.95, method = "biserial", ...) {
   # valid matrix
-  if (.vartype(data[[x]])$is_binary && .vartype(data[[y]])$is_binary == FALSE) {
+  if (.vartype(data[[x]])$is_binary && !.vartype(data[[y]])$is_binary) {
     binary <- x
     continuous <- y
-  } else if (.vartype(data[[y]])$is_binary && .vartype(data[[x]])$is_binary == FALSE) {
+  } else if (.vartype(data[[y]])$is_binary && !.vartype(data[[x]])$is_binary) {
     binary <- y
     continuous <- x
   } else {
-    stop(insight::format_message(
+    insight::format_error(
       "Biserial and point-biserial correlations can only be applied for one dichotomous and one continuous variables."
-    ), call. = FALSE)
+    )
   }
 
   # Rescale to 0-1
   if (.vartype(data[[binary]])$is_factor || .vartype(data[[binary]])$is_character) {
     data[[binary]] <- as.numeric(as.factor(data[[binary]]))
   }
-  data[[binary]] <- as.vector((data[[binary]] - min(data[[binary]], na.rm = TRUE)) / diff(range(data[[binary]], na.rm = TRUE), na.rm = TRUE))
+
+  data[[binary]] <- as.vector(
+    (data[[binary]] - min(data[[binary]], na.rm = TRUE)) /
+      (diff(range(data[[binary]], na.rm = TRUE), na.rm = TRUE))
+  )
 
   # Get biserial or point-biserial correlation
   if (method == "biserial") {
