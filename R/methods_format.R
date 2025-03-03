@@ -40,6 +40,7 @@ format.easycormatrix <- function(x,
                                  stars = NULL,
                                  include_significance = NULL,
                                  format = NULL,
+                                 zap_small = NULL,
                                  bf_exact = TRUE,
                                  ...) {
   # If it's a real matrix
@@ -56,11 +57,16 @@ format.easycormatrix <- function(x,
   stars <- .retrieve_arg_from_attr(attri, stars, default = TRUE)
   include_significance <- .retrieve_arg_from_attr(attri, include_significance, default = FALSE)
   p_digits <- .retrieve_arg_from_attr(attri, p_digits, default = "apa")
+  zap_small <- .retrieve_arg_from_attr(attri, zap_small, default = TRUE)
 
 
   # Round and format values
   nums <- sapply(as.data.frame(x), is.numeric)
-  x[, nums] <- sapply(as.data.frame(x)[, nums], insight::format_value, digits = digits)
+  x[, nums] <- sapply(
+    as.data.frame(x)[, nums],
+    insight::format_value,
+    digits = digits, zap_small = zap_small, ...
+  )
 
 
   # Deduct if stars only
@@ -156,10 +162,17 @@ format.easycormatrix <- function(x,
   # final new line
   footer <- paste0(footer, "\n")
 
-  # for html/markdown, create list
+  # for html/markdown, modify footer format
   if (!is.null(format) && format != "text") {
+    # no line break if not text format
     footer <- unlist(strsplit(footer, "\n", fixed = TRUE))
-    footer <- as.list(footer[nzchar(footer, keepNA = TRUE)])
+    # remove empty elements
+    footer <- footer[nzchar(footer, keepNA = TRUE)]
+    # create list or separate by ";"
+    footer <- switch(format,
+      html = paste(footer, collapse = "; "),
+      as.list(footer)
+    )
   }
 
   footer
@@ -168,7 +181,9 @@ format.easycormatrix <- function(x,
 
 #' @keywords internal
 .format_easycorrelation_caption <- function(x, format = NULL) {
-  if (!is.null(attributes(x)$method)) {
+  if (is.null(attributes(x)$method)) {
+    caption <- NULL
+  } else {
     if (isTRUE(attributes(x)$smoothed)) {
       prefix <- "Smoothed Correlation Matrix ("
     } else {
@@ -179,8 +194,6 @@ format.easycormatrix <- function(x,
     } else {
       caption <- paste0(prefix, unique(attributes(x)$method), "-method)")
     }
-  } else {
-    caption <- NULL
   }
 
   caption

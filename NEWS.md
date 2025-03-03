@@ -1,3 +1,13 @@
+# correlation 0.8.7
+
+- The `format()` method for objects of class `easycormatrix` gets a `zap_small`
+  argument, to round very small numbers.
+
+- `cor_sort()` can now deal with non-square matrices.
+
+- Updated required R version to >= 4.1.0 (released May 2021) to pass CRAN checks
+  on documentation
+
 # correlation 0.8.6
 
 - Fix CRAN check issues.
